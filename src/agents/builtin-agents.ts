@@ -29,7 +29,7 @@ import { maybeCreateAtlasConfig } from "./builtin-agents/atlas-agent"
 
 type AgentSource = AgentFactory | AgentConfig
 
-const agentSources: Record<BuiltinAgentName, AgentSource> = {
+const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
   sisyphus: createSisyphusAgent,
   hephaestus: createHephaestusAgent,
   oracle: createOracleAgent,
