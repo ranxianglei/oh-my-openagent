@@ -168,6 +168,69 @@ describe("createBuiltinAgents with model overrides", () => {
     }
   })
 
+  test("Athena uses uiSelectedModel when provided", async () => {
+    // #given
+    const fetchSpy = spyOn(shared, "fetchAvailableModels").mockResolvedValue(
+      new Set(["openai/gpt-5.2", "anthropic/claude-opus-4-6"])
+    )
+    const uiSelectedModel = "openai/gpt-5.2"
+
+    try {
+      // #when
+      const agents = await createBuiltinAgents(
+        [],
+        {},
+        undefined,
+        TEST_DEFAULT_MODEL,
+        undefined,
+        undefined,
+        [],
+        undefined,
+        undefined,
+        uiSelectedModel
+      )
+
+      // #then
+      expect(agents.athena).toBeDefined()
+      expect(agents.athena.model).toBe("openai/gpt-5.2")
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
+
+  test("user config model takes priority over uiSelectedModel for athena", async () => {
+    // #given
+    const fetchSpy = spyOn(shared, "fetchAvailableModels").mockResolvedValue(
+      new Set(["openai/gpt-5.2", "anthropic/claude-opus-4-6"])
+    )
+    const uiSelectedModel = "openai/gpt-5.2"
+    const overrides = {
+      athena: { model: "anthropic/claude-opus-4-6" },
+    }
+
+    try {
+      // #when
+      const agents = await createBuiltinAgents(
+        [],
+        overrides,
+        undefined,
+        TEST_DEFAULT_MODEL,
+        undefined,
+        undefined,
+        [],
+        undefined,
+        undefined,
+        uiSelectedModel
+      )
+
+      // #then
+      expect(agents.athena).toBeDefined()
+      expect(agents.athena.model).toBe("anthropic/claude-opus-4-6")
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
+
   test("Sisyphus is created on first run when no availableModels or cache exist", async () => {
     // #given
     const systemDefaultModel = "anthropic/claude-opus-4-6"
