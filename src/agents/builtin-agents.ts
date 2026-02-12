@@ -13,6 +13,7 @@ import { createAtlasAgent, atlasPromptMetadata } from "./atlas"
 import { createMomusAgent, momusPromptMetadata } from "./momus"
 import { createHephaestusAgent } from "./hephaestus"
 import { createSisyphusJuniorAgentWithOverrides } from "./sisyphus-junior"
+import { createAthenaAgent, ATHENA_PROMPT_METADATA } from "./athena/agent"
 import type { AvailableCategory } from "./dynamic-agent-prompt-builder"
 import {
   fetchAvailableModels,
@@ -38,6 +39,7 @@ const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
   "multimodal-looker": createMultimodalLookerAgent,
   metis: createMetisAgent,
   momus: createMomusAgent,
+  athena: createAthenaAgent,
   // Note: Atlas is handled specially in createBuiltinAgents()
   // because it needs OrchestratorContext, not just a model string
   atlas: createAtlasAgent as AgentFactory,
@@ -55,6 +57,7 @@ const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   "multimodal-looker": MULTIMODAL_LOOKER_PROMPT_METADATA,
   metis: metisPromptMetadata,
   momus: momusPromptMetadata,
+  athena: ATHENA_PROMPT_METADATA,
   atlas: atlasPromptMetadata,
 }
 
