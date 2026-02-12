@@ -69,6 +69,17 @@ export function createKeywordDetectorHook(
         }
       }
 
+      // Athena is a council orchestrator — skip all keyword injections.
+      // search/analyze modes tell the agent to use explore agents and grep directly,
+      // which conflicts with Athena's job of calling athena_council for council fan-out.
+      if (currentAgent?.toLowerCase() === "athena") {
+        log(`[keyword-detector] Skipping all keywords for Athena (council orchestrator)`, {
+          sessionID: input.sessionID,
+          skippedTypes: detectedKeywords.map((k) => k.type),
+        })
+        return
+      }
+
       if (detectedKeywords.length === 0) {
         return
       }
