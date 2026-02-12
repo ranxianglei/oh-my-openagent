@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { AthenaConfigSchema } from "./athena"
 import { FallbackModelsSchema } from "./fallback-models"
 import { AgentPermissionSchema } from "./internal/permission"
 
@@ -55,6 +56,12 @@ export const AgentOverrideConfigSchema = z.object({
     .optional(),
 })
 
+export const AthenaOverrideConfigSchema = AgentOverrideConfigSchema.merge(
+  z.object({
+    council: AthenaConfigSchema.shape.council,
+  })
+)
+
 export const AgentOverridesSchema = z.object({
   build: AgentOverrideConfigSchema.optional(),
   plan: AgentOverrideConfigSchema.optional(),
@@ -72,6 +79,7 @@ export const AgentOverridesSchema = z.object({
   explore: AgentOverrideConfigSchema.optional(),
   "multimodal-looker": AgentOverrideConfigSchema.optional(),
   atlas: AgentOverrideConfigSchema.optional(),
+  athena: AthenaOverrideConfigSchema.optional(),
 })
 
 export type AgentOverrideConfig = z.infer<typeof AgentOverrideConfigSchema>
