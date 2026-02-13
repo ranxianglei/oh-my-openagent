@@ -17,6 +17,7 @@ import {
 	resolveModelFromChain,
 } from "./fallback-chain-resolution"
 import { transformModelForProvider } from "./provider-model-id-transform"
+import { generateCouncilMembers } from "./council-members-generator"
 
 export type { GeneratedOmoConfig } from "./model-fallback-types"
 
@@ -212,6 +213,12 @@ export function generateModelConfig(config: InstallConfig): GeneratedOmoConfig {
     } else {
       categories[cat] = { model: ULTIMATE_FALLBACK }
     }
+  }
+
+  const councilMembers = generateCouncilMembers(avail)
+  if (councilMembers.length >= 2) {
+    const athenaAgent = agents.athena ?? {}
+    agents.athena = { ...athenaAgent, council: { members: councilMembers } } as AgentConfig
   }
 
   const generatedConfig: GeneratedOmoConfig = {
