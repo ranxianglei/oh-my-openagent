@@ -87,10 +87,6 @@ export interface LaunchInput {
   skillContent?: string
   category?: string
   sessionPermission?: SessionPermissionRule[]
-  /** Per-task temperature override for council members or custom launches */
-  temperature?: number
-  /** Tool permission overrides (e.g., { write: "deny", edit: "deny" }) */
-  permission?: Record<string, "ask" | "allow" | "deny">
 }
 
 export interface ResumeInput {
