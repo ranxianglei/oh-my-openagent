@@ -177,6 +177,7 @@ export function createToolRegistry(args: {
   const athenaCouncilTool = createAthenaCouncilTool({
     backgroundManager: managers.backgroundManager,
     councilConfig: athenaCouncilConfig,
+    client: ctx.client,
   })
 
   const isMultimodalLookerEnabled = !(pluginConfig.disabled_agents ?? []).some(
