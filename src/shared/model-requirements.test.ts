@@ -265,8 +265,8 @@ describe("AGENT_MODEL_REQUIREMENTS", () => {
     expect(hephaestus.requiresModel).toBeUndefined()
   })
 
-  test("all 11 builtin agents have valid fallbackChain arrays", () => {
-    // #given - list of 11 agent names
+  test("all 12 builtin agents have valid fallbackChain arrays", () => {
+    // #given - list of 12 agent names
     const expectedAgents = [
       "sisyphus",
       "hephaestus",
@@ -280,6 +280,7 @@ describe("AGENT_MODEL_REQUIREMENTS", () => {
       "atlas",
       "sisyphus-junior",
       "athena",
+      "council-member",
     ]
 
     // when - checking AGENT_MODEL_REQUIREMENTS

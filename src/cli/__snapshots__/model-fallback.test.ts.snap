@@ -10,6 +10,9 @@ exports[`generateModelConfig no providers available returns ULTIMATE_FALLBACK fo
     "atlas": {
       "model": "opencode/gpt-5-nano",
     },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
+    },
     "explore": {
       "model": "opencode/gpt-5-nano",
     },
@@ -77,6 +80,9 @@ exports[`generateModelConfig single native provider uses Claude models when only
     },
     "atlas": {
       "model": "anthropic/claude-sonnet-4.6",
+    },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
     },
     "explore": {
       "fallback_models": [
@@ -152,6 +158,9 @@ exports[`generateModelConfig single native provider uses Claude models with isMa
     },
     "atlas": {
       "model": "anthropic/claude-sonnet-4.6",
+    },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
     },
     "explore": {
       "fallback_models": [
@@ -229,6 +238,9 @@ exports[`generateModelConfig single native provider uses OpenAI models when only
     "atlas": {
       "model": "openai/gpt-5.4",
       "variant": "medium",
+    },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
     },
     "explore": {
       "model": "openai/gpt-5.4",
@@ -324,6 +336,9 @@ exports[`generateModelConfig single native provider uses OpenAI models with isMa
       "model": "openai/gpt-5.4",
       "variant": "medium",
     },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
+    },
     "explore": {
       "model": "openai/gpt-5.4",
       "variant": "medium",
@@ -417,6 +432,9 @@ exports[`generateModelConfig single native provider uses Gemini models when only
     "atlas": {
       "model": "opencode/gpt-5-nano",
     },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
+    },
     "explore": {
       "model": "opencode/gpt-5-nano",
     },
@@ -484,6 +502,9 @@ exports[`generateModelConfig single native provider uses Gemini models with isMa
     },
     "atlas": {
       "model": "opencode/gpt-5-nano",
+    },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
     },
     "explore": {
       "model": "opencode/gpt-5-nano",
@@ -574,6 +595,9 @@ exports[`generateModelConfig all native providers uses preferred models from fal
         },
       ],
       "model": "anthropic/claude-sonnet-4.6",
+    },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
     },
     "explore": {
       "fallback_models": [
@@ -799,6 +823,9 @@ exports[`generateModelConfig all native providers uses preferred models with isM
       ],
       "model": "anthropic/claude-sonnet-4.6",
     },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
+    },
     "explore": {
       "fallback_models": [
         {
@@ -1004,6 +1031,9 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models when on
         },
       ],
       "model": "opencode/claude-sonnet-4-6",
+    },
+    "council-member": {
+      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -1233,6 +1263,9 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models with is
         },
       ],
       "model": "opencode/claude-sonnet-4-6",
+    },
+    "council-member": {
+      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -1467,6 +1500,9 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models when 
       ],
       "model": "github-copilot/claude-sonnet-4.6",
     },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
+    },
     "explore": {
       "fallback_models": [
         {
@@ -1657,6 +1693,9 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models with 
       ],
       "model": "github-copilot/claude-sonnet-4.6",
     },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
+    },
     "explore": {
       "fallback_models": [
         {
@@ -1842,6 +1881,9 @@ exports[`generateModelConfig fallback providers uses ZAI model for librarian whe
     "atlas": {
       "model": "opencode/gpt-5-nano",
     },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
+    },
     "explore": {
       "model": "opencode/gpt-5-nano",
     },
@@ -1905,6 +1947,9 @@ exports[`generateModelConfig fallback providers uses ZAI model for librarian wit
     },
     "atlas": {
       "model": "opencode/gpt-5-nano",
+    },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
     },
     "explore": {
       "model": "opencode/gpt-5-nano",
@@ -1979,6 +2024,9 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + OpenCode Zen
         },
       ],
       "model": "anthropic/claude-sonnet-4.6",
+    },
+    "council-member": {
+      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -2270,6 +2318,9 @@ exports[`generateModelConfig mixed provider scenarios uses OpenAI + Copilot comb
       ],
       "model": "github-copilot/claude-sonnet-4.6",
     },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
+    },
     "explore": {
       "fallback_models": [
         {
@@ -2515,6 +2566,9 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + ZAI combinat
     "atlas": {
       "model": "anthropic/claude-sonnet-4.6",
     },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
+    },
     "explore": {
       "fallback_models": [
         {
@@ -2619,6 +2673,9 @@ exports[`generateModelConfig mixed provider scenarios uses Gemini + Claude combi
     },
     "atlas": {
       "model": "anthropic/claude-sonnet-4.6",
+    },
+    "council-member": {
+      "model": "opencode/glm-4.7-free",
     },
     "explore": {
       "fallback_models": [
@@ -2772,6 +2829,9 @@ exports[`generateModelConfig mixed provider scenarios uses all fallback provider
         },
       ],
       "model": "github-copilot/claude-sonnet-4.6",
+    },
+    "council-member": {
+      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -3190,6 +3250,9 @@ exports[`generateModelConfig mixed provider scenarios uses all providers togethe
         },
       ],
       "model": "anthropic/claude-sonnet-4.6",
+    },
+    "council-member": {
+      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -3764,6 +3827,9 @@ exports[`generateModelConfig mixed provider scenarios uses all providers with is
         },
       ],
       "model": "anthropic/claude-sonnet-4.6",
+    },
+    "council-member": {
+      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
