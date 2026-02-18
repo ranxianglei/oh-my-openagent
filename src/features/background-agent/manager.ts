@@ -17,6 +17,7 @@ import {
   createInternalAgentTextPart,
 } from "../../shared"
 import { applySessionPromptParams } from "../../shared/session-prompt-params-helpers"
+import { normalizeAgentForPrompt } from "../../shared/agent-display-names"
 import { setSessionTools } from "../../shared/session-tools-store"
 import { SessionCategoryRegistry } from "../../shared/session-category-registry"
 import { ConcurrencyManager } from "./concurrency"
@@ -1829,10 +1830,11 @@ export class BackgroundManager {
         }
 
         const resolvedTools = resolveInheritedPromptTools(task.parentSessionID, tools)
+        const promptAgent = normalizeAgentForPrompt(agent)
 
         log("[background-agent] notifyParentSession context:", {
           taskId: task.id,
-          resolvedAgent: agent,
+          resolvedAgent: promptAgent,
           resolvedModel: model,
         })
 
@@ -1846,7 +1848,7 @@ export class BackgroundManager {
             path: { id: task.parentSessionID },
             body: {
               noReply: !shouldReply,
-              ...(agent !== undefined ? { agent } : {}),
+              ...(promptAgent !== undefined ? { agent: promptAgent } : {}),
               ...(model !== undefined ? { model } : {}),
               ...(variant !== undefined ? { variant } : {}),
               ...(resolvedTools ? { tools: resolvedTools } : {}),
