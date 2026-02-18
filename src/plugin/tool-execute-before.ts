@@ -1,10 +1,11 @@
 import type { PluginContext } from "./types"
 import { randomUUID } from "node:crypto"
+import type { BackgroundManager } from "../features/background-agent"
 
 import { getMainSessionID } from "../features/claude-code-session-state"
 import { clearBoulderState } from "../features/boulder-state"
 import { log } from "../shared"
-import { stripInvisibleAgentCharacters } from "../shared/agent-display-names"
+import { stripInvisibleAgentCharacters, getAgentConfigKey } from "../shared/agent-display-names"
 import { resolveSessionAgent } from "./session-agent-resolver"
 import { parseRalphLoopArguments } from "../hooks/ralph-loop/command-arguments"
 import { ULTRAWORK_VERIFICATION_PROMISE } from "../hooks/ralph-loop/constants"
@@ -25,11 +26,24 @@ function getLoopCommandArguments(args: Record<string, unknown>, command: "ralph-
 export function createToolExecuteBeforeHandler(args: {
   ctx: PluginContext
   hooks: CreatedHooks
+  backgroundManager?: Pick<BackgroundManager, "getTasksByParentSession">
 }): (
   input: { tool: string; sessionID: string; callID: string },
   output: { args: Record<string, unknown> },
 ) => Promise<void> {
-  const { ctx, hooks } = args
+  const { ctx, hooks, backgroundManager } = args
+
+  function hasPendingCouncilMembers(sessionID: string): boolean {
+    if (!backgroundManager) {
+      return false
+    }
+
+    const tasks = backgroundManager.getTasksByParentSession(sessionID)
+    return tasks.some((task) =>
+      task.agent === "council-member" &&
+      (task.status === "pending" || task.status === "running")
+    )
+  }
 
   function buildUltraworkOracleVerificationPrompt(prompt: string, originalTask: string, verificationAttemptId: string): string {
     const verificationPrompt = [
@@ -59,6 +73,19 @@ export function createToolExecuteBeforeHandler(args: {
           sessionID: input.sessionID,
           callID: input.callID,
         })
+      }
+    }
+
+    const toolNameLower = input.tool?.toLowerCase()
+
+    if (toolNameLower === "question" || toolNameLower === "askuserquestion" || toolNameLower === "ask_user_question" || toolNameLower === "switch_agent") {
+      const sessionAgent = await resolveSessionAgent(ctx.client, input.sessionID)
+      const sessionAgentKey = sessionAgent ? getAgentConfigKey(sessionAgent) : undefined
+
+      if (sessionAgentKey === "athena" && hasPendingCouncilMembers(input.sessionID)) {
+        throw new Error(
+          "Council members are still running. Wait for all launched members to finish and collect their outputs before asking next-step questions or switching agents."
+        )
       }
     }
 

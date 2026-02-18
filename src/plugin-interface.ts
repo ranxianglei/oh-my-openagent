@@ -73,6 +73,7 @@ export function createPluginInterface(args: {
     "tool.execute.before": createToolExecuteBeforeHandler({
       ctx,
       hooks,
+      backgroundManager: managers.backgroundManager,
     }),
 
     "tool.execute.after": createToolExecuteAfterHandler({
