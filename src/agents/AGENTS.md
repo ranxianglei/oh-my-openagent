@@ -1,4 +1,4 @@
-# src/agents/ — 11 Agent Definitions
+# src/agents/ — 13 Agent Definitions
 
 **Generated:** 2026-04-11
 
@@ -20,6 +20,8 @@ Agent factories following `createXXXAgent(model) → AgentConfig` pattern. Each 
 | **Momus** | gpt-5.4 xhigh | 0.1 | subagent | claude-opus-4-6 max -> gemini-3.1-pro high | Plan reviewer |
 | **Atlas** | claude-sonnet-4-6 | 0.1 | primary | gpt-5.4 medium | Todo-list orchestrator |
 | **Prometheus** | claude-opus-4-6 max | 0.1 | — | internal planner | Strategic planner (internal) |
+| **Athena** | claude-opus-4-6 max | 0.1 | primary | k2p5 -> kimi-k2.5 -> gpt-5.4 medium -> glm-5 | Multi-model council orchestrator |
+| **Council-Member** | gpt-5-nano | 0.1 | subagent | NONE | Independent council analyst |
 | **Sisyphus-Junior** | claude-sonnet-4-6 | 0.1 | all | user-configurable | Category-spawned executor |
 
 ## TOOL RESTRICTIONS
@@ -32,6 +34,8 @@ Agent factories following `createXXXAgent(model) → AgentConfig` pattern. Each 
 | Multimodal-Looker | ALL except read |
 | Atlas | task, call_omo_agent |
 | Momus | write, edit, task |
+| Athena | write, edit |
+| Council-Member | write, edit, task, call_omo_agent, athena_council |
 
 ## STRUCTURE
 
@@ -46,6 +50,14 @@ agents/
 ├── metis.ts               # Pre-planning
 ├── momus.ts               # Plan review
 ├── atlas/agent.ts         # Todo orchestrator
+├── athena/                # Multi-model council orchestrator
+│   ├── agent.ts           # Athena agent factory
+│   ├── council-member-agent.ts  # Council member agent factory
+│   ├── council-orchestrator.ts  # Council execution logic
+│   ├── council-prompt.ts  # Council prompt builder
+│   ├── model-parser.ts    # Model string parser
+│   ├── types.ts           # Council types
+│   └── index.ts           # Barrel exports
 ├── types.ts               # AgentFactory, AgentMode
 ├── agent-builder.ts       # buildAgent() composition
 ├── utils.ts               # Agent utilities
