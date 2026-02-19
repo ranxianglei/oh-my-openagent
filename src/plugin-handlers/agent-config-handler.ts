@@ -154,6 +154,7 @@ export async function applyAgentConfig(params: {
     }
   );
 
+  const athenaCouncilConfig = params.pluginConfig.agents?.athena?.council
   const builtinAgents = await createBuiltinAgents(
     migratedDisabledAgents,
     params.pluginConfig.agents,
@@ -168,6 +169,7 @@ export async function applyAgentConfig(params: {
     disabledSkills,
     useTaskSystem,
     disableOmoEnv,
+    athenaCouncilConfig,
   );
 
   const disabledAgentNames = new Set(
