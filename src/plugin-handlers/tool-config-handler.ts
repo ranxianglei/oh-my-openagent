@@ -122,6 +122,14 @@ export function applyToolConfig(params: {
       ...denyTodoTools,
     };
   }
+  const athena = agentByKey(params.agentResult, "athena");
+  if (athena) {
+    athena.permission = {
+      ...athena.permission,
+      task: "allow",
+      question: questionPermission,
+    };
+  }
 
   params.config.permission = {
     webfetch: "allow",
