@@ -12,6 +12,7 @@ import { ULTRAWORK_VERIFICATION_PROMISE } from "../hooks/ralph-loop/constants"
 import { readState, writeState } from "../hooks/ralph-loop/storage"
 
 import type { CreatedHooks } from "../create-hooks"
+import { COUNCIL_MEMBER_KEY_PREFIX } from "../agents/builtin-agents/council-member-agents"
 
 function getLoopCommandArguments(args: Record<string, unknown>, command: "ralph-loop" | "ulw-loop"): string {
   const rawUserMessage = typeof args.user_message === "string" ? args.user_message.trim() : ""
@@ -40,7 +41,7 @@ export function createToolExecuteBeforeHandler(args: {
 
     const tasks = backgroundManager.getTasksByParentSession(sessionID)
     return tasks.some((task) =>
-      task.agent === "council-member" &&
+      (task.agent === "council-member" || task.agent.startsWith(COUNCIL_MEMBER_KEY_PREFIX)) &&
       (task.status === "pending" || task.status === "running")
     )
   }
