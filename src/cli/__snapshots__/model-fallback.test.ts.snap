@@ -4,14 +4,8 @@ exports[`generateModelConfig no providers available returns ULTIMATE_FALLBACK fo
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "opencode/big-pickle",
-    },
     "atlas": {
       "model": "opencode/gpt-5-nano",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "model": "opencode/gpt-5-nano",
@@ -74,15 +68,8 @@ exports[`generateModelConfig single native provider uses Claude models when only
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
-    },
     "atlas": {
       "model": "anthropic/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "fallback_models": [
@@ -152,15 +139,8 @@ exports[`generateModelConfig single native provider uses Claude models with isMa
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
-    },
     "atlas": {
       "model": "anthropic/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "fallback_models": [
@@ -231,16 +211,9 @@ exports[`generateModelConfig single native provider uses OpenAI models when only
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "openai/gpt-5.2",
-      "variant": "high",
-    },
     "atlas": {
       "model": "openai/gpt-5.4",
       "variant": "medium",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "model": "openai/gpt-5.4",
@@ -328,16 +301,9 @@ exports[`generateModelConfig single native provider uses OpenAI models with isMa
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "openai/gpt-5.2",
-      "variant": "high",
-    },
     "atlas": {
       "model": "openai/gpt-5.4",
       "variant": "medium",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "model": "openai/gpt-5.4",
@@ -425,15 +391,8 @@ exports[`generateModelConfig single native provider uses Gemini models when only
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "google/gemini-3-pro",
-      "variant": "high",
-    },
     "atlas": {
       "model": "opencode/gpt-5-nano",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "model": "opencode/gpt-5-nano",
@@ -496,15 +455,8 @@ exports[`generateModelConfig single native provider uses Gemini models with isMa
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "google/gemini-3-pro",
-      "variant": "high",
-    },
     "atlas": {
       "model": "opencode/gpt-5-nano",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "model": "opencode/gpt-5-nano",
@@ -584,8 +536,6 @@ exports[`generateModelConfig all native providers uses preferred models from fal
           },
         ],
       },
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
     },
     "atlas": {
       "fallback_models": [
@@ -595,9 +545,6 @@ exports[`generateModelConfig all native providers uses preferred models from fal
         },
       ],
       "model": "anthropic/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "fallback_models": [
@@ -811,8 +758,6 @@ exports[`generateModelConfig all native providers uses preferred models with isM
           },
         ],
       },
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
     },
     "atlas": {
       "fallback_models": [
@@ -822,9 +767,6 @@ exports[`generateModelConfig all native providers uses preferred models with isM
         },
       ],
       "model": "anthropic/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "fallback_models": [
@@ -1019,10 +961,6 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models when on
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "opencode/claude-opus-4-6",
-      "variant": "max",
-    },
     "atlas": {
       "fallback_models": [
         {
@@ -1031,9 +969,6 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models when on
         },
       ],
       "model": "opencode/claude-sonnet-4-6",
-    },
-    "council-member": {
-      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -1251,10 +1186,6 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models with is
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "opencode/claude-opus-4-6",
-      "variant": "max",
-    },
     "atlas": {
       "fallback_models": [
         {
@@ -1263,9 +1194,6 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models with is
         },
       ],
       "model": "opencode/claude-sonnet-4-6",
-    },
-    "council-member": {
-      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -1487,10 +1415,6 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models when 
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
-    },
     "atlas": {
       "fallback_models": [
         {
@@ -1499,9 +1423,6 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models when 
         },
       ],
       "model": "github-copilot/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "fallback_models": [
@@ -1680,10 +1601,6 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models with 
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
-    },
     "atlas": {
       "fallback_models": [
         {
@@ -1692,9 +1609,6 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models with 
         },
       ],
       "model": "github-copilot/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "fallback_models": [
@@ -1875,14 +1789,8 @@ exports[`generateModelConfig fallback providers uses ZAI model for librarian whe
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "zai-coding-plan/glm-4.7",
-    },
     "atlas": {
       "model": "opencode/gpt-5-nano",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "model": "opencode/gpt-5-nano",
@@ -1942,14 +1850,8 @@ exports[`generateModelConfig fallback providers uses ZAI model for librarian wit
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "zai-coding-plan/glm-4.7",
-    },
     "atlas": {
       "model": "opencode/gpt-5-nano",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "model": "opencode/gpt-5-nano",
@@ -2009,10 +1911,6 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + OpenCode Zen
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
-    },
     "atlas": {
       "fallback_models": [
         {
@@ -2024,9 +1922,6 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + OpenCode Zen
         },
       ],
       "model": "anthropic/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -2301,10 +2196,6 @@ exports[`generateModelConfig mixed provider scenarios uses OpenAI + Copilot comb
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
-    },
     "atlas": {
       "fallback_models": [
         {
@@ -2317,9 +2208,6 @@ exports[`generateModelConfig mixed provider scenarios uses OpenAI + Copilot comb
         },
       ],
       "model": "github-copilot/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "fallback_models": [
@@ -2559,15 +2447,8 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + ZAI combinat
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
-    },
     "atlas": {
       "model": "anthropic/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "fallback_models": [
@@ -2668,14 +2549,9 @@ exports[`generateModelConfig mixed provider scenarios uses Gemini + Claude combi
           },
         ],
       },
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
     },
     "atlas": {
       "model": "anthropic/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/big-pickle",
     },
     "explore": {
       "fallback_models": [
@@ -2810,10 +2686,6 @@ exports[`generateModelConfig mixed provider scenarios uses all fallback provider
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
-    "athena": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
-    },
     "atlas": {
       "fallback_models": [
         {
@@ -2829,9 +2701,6 @@ exports[`generateModelConfig mixed provider scenarios uses all fallback provider
         },
       ],
       "model": "github-copilot/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -3225,8 +3094,6 @@ exports[`generateModelConfig mixed provider scenarios uses all providers togethe
           },
         ],
       },
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
     },
     "atlas": {
       "fallback_models": [
@@ -3250,9 +3117,6 @@ exports[`generateModelConfig mixed provider scenarios uses all providers togethe
         },
       ],
       "model": "anthropic/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
@@ -3802,8 +3666,6 @@ exports[`generateModelConfig mixed provider scenarios uses all providers with is
           },
         ],
       },
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
     },
     "atlas": {
       "fallback_models": [
@@ -3827,9 +3689,6 @@ exports[`generateModelConfig mixed provider scenarios uses all providers with is
         },
       ],
       "model": "anthropic/claude-sonnet-4.6",
-    },
-    "council-member": {
-      "model": "opencode/gpt-5-nano",
     },
     "explore": {
       "fallback_models": [
