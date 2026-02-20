@@ -30,6 +30,7 @@ import { maybeCreateSisyphusConfig } from "./builtin-agents/sisyphus-agent"
 import { maybeCreateHephaestusConfig } from "./builtin-agents/hephaestus-agent"
 import { maybeCreateAtlasConfig } from "./builtin-agents/atlas-agent"
 import { registerCouncilMemberAgents } from "./builtin-agents/council-member-agents"
+import { appendMissingCouncilPrompt } from "./builtin-agents/athena-council-guard"
 import type { CouncilConfig } from "./athena/types"
 
 type AgentSource = AgentFactory | AgentConfig
@@ -200,9 +201,13 @@ export async function createBuiltinAgents(
         ...result["athena"],
         prompt: (result["athena"].prompt ?? "") + councilTaskInstructions,
       }
+    } else {
+      result["athena"] = appendMissingCouncilPrompt(result["athena"])
     }
   } else if (councilConfig && councilConfig.members.length >= 2 && !result["athena"]) {
     log("[builtin-agents] Skipping council member registration — Athena is disabled")
+  } else if (result["athena"]) {
+    result["athena"] = appendMissingCouncilPrompt(result["athena"])
   }
 
   return result
