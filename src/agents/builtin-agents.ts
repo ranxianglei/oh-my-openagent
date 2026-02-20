@@ -31,7 +31,7 @@ import { maybeCreateHephaestusConfig } from "./builtin-agents/hephaestus-agent"
 import { maybeCreateAtlasConfig } from "./builtin-agents/atlas-agent"
 import { registerCouncilMemberAgents } from "./builtin-agents/council-member-agents"
 import { appendMissingCouncilPrompt } from "./builtin-agents/athena-council-guard"
-import type { CouncilConfig } from "./athena/types"
+import type { CouncilConfig } from "../config/schema/athena"
 
 type AgentSource = AgentFactory | AgentConfig
 
