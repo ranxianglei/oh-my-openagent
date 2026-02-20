@@ -45,6 +45,6 @@ export interface SkillLoadOptions {
     get(name: string): { name: string; description: string; location: string; content: string } | undefined | Promise<{ name: string; description: string; location: string; content: string } | undefined>
     dirs(): string[] | Promise<string[]>
   }
-  /** Project directory for skill discovery and base directory resolution. Should be ctx.directory from PluginContext. */
-  directory?: string
+  /** Project directory for skill discovery and base directory resolution. Must be ctx.directory from PluginContext -- process.cwd() is unsafe in OpenCode. */
+  directory: string
 }
