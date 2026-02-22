@@ -65,6 +65,7 @@ const AGENT_RESTRICTIONS: Record<string, Record<string, boolean>> = {
     call_omo_agent: false,
     switch_agent: false,
     background_wait: false,
+    prepare_council_prompt: false,
   },
 }
 

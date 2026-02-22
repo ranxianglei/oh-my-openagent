@@ -42,6 +42,7 @@ export function applyToolConfig(params: {
     LspCodeActionResolve: false,
     "task_*": false,
     teammate: false,
+    prepare_council_prompt: false,
     ...(taskSystemEnabled
       ? { todowrite: false, todoread: false }
       : {}),
@@ -131,6 +132,7 @@ export function applyToolConfig(params: {
     athena.permission = {
       ...athena.permission,
       task: "allow",
+      prepare_council_prompt: "allow",
       question: questionPermission,
     };
   }
