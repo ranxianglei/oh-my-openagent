@@ -279,7 +279,7 @@ export function createToolRegistry(args: {
     ...(interactiveBashEnabled ? { interactive_bash: factories.interactive_bash } : {}),
     ...taskToolsRecord,
     ...hashlineToolsRecord,
-    prepare_council_prompt: createPrepareCouncilPromptTool(),
+    prepare_council_prompt: createPrepareCouncilPromptTool(ctx.directory),
   }
 
   for (const toolDefinition of Object.values(allTools)) {
