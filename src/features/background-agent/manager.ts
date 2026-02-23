@@ -165,6 +165,7 @@ export class BackgroundManager {
   private observedIncompleteTodosBySession: Map<string, boolean> = new Map()
   private rootDescendantCounts: Map<string, number>
   private preStartDescendantReservations: Set<string>
+  private recentlyCompactedSessions: Set<string> = new Set()
   private enableParentSessionNotifications: boolean
   readonly taskHistory = new TaskHistory()
   private cachedCircuitBreakerSettings?: CircuitBreakerSettings
@@ -1122,12 +1123,31 @@ export class BackgroundManager {
       return
     }
 
+    if (event.type === "session.compacted") {
+      const sessionID = typeof props?.sessionID === "string"
+        ? props.sessionID
+        : typeof (props?.info as { id?: string } | undefined)?.id === "string"
+          ? (props!.info as { id: string }).id
+          : undefined
+      if (!sessionID) return
+
+      const task = this.findBySession(sessionID)
+      if (!task || task.status !== "running") return
+
+      this.recentlyCompactedSessions.add(sessionID)
+      if (task.progress) {
+        task.progress.lastUpdate = new Date()
+      }
+      log("[background-agent] Session compacted, deferring next idle:", { taskId: task.id, sessionID })
+    }
+
     if (event.type === "session.idle") {
       if (!props || typeof props !== "object") return
       handleSessionIdleBackgroundEvent({
         properties: props as Record<string, unknown>,
         findBySession: (id) => this.findBySession(id),
         idleDeferralTimers: this.idleDeferralTimers,
+        recentlyCompactedSessions: this.recentlyCompactedSessions,
         validateSessionHasOutput: (id) => this.validateSessionHasOutput(id),
         checkSessionTodos: (id) => this.checkSessionTodos(id),
         tryCompleteTask: (task, source) => this.tryCompleteTask(task, source),
@@ -1219,6 +1239,7 @@ export class BackgroundManager {
 
       this.rootDescendantCounts.delete(sessionID)
       SessionCategoryRegistry.remove(sessionID)
+      this.recentlyCompactedSessions.delete(sessionID)
     }
 
     if (event.type === "session.status") {
@@ -2180,6 +2201,7 @@ export class BackgroundManager {
     this.pendingByParent.clear()
     this.notificationQueueByParent.clear()
     this.rootDescendantCounts.clear()
+    this.recentlyCompactedSessions.clear()
     this.queuesByKey.clear()
     this.processingKeys.clear()
     this.taskHistory.clearAll()
