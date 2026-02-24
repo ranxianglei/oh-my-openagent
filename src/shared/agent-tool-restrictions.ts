@@ -72,6 +72,7 @@ const AGENT_RESTRICTIONS: Record<string, Record<string, boolean>> = {
     lsp_diagnostics: true,
     ast_grep_search: true,
     call_omo_agent: true,
+    background_output: true,
     todowrite: false,
     todoread: false,
   },
