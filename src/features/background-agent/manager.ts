@@ -80,6 +80,7 @@ import {
   type SubagentSpawnContext,
 } from "./subagent-spawn-limits"
 
+import { writeTaskOutput } from "./task-output-writer"
 type OpencodeClient = PluginInput["client"]
 
 
@@ -1688,6 +1689,16 @@ export class BackgroundManager {
     if (task.status !== "running") {
       log("[background-agent] Task already completed, skipping:", { taskId: task.id, status: task.status, source })
       return false
+    }
+
+    // Prevent concurrent re-entry during async file write
+    if (task._isCompleting) return false
+    task._isCompleting = true
+
+    // Write output to file if requested (before status flip)
+    if (task.writeOutputToFile) {
+      const filePath = await writeTaskOutput(task, this.client)
+      if (filePath) task.outputFilePath = filePath
     }
 
     // Atomically mark as completed to prevent race conditions
