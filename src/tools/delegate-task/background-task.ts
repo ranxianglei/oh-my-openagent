@@ -80,6 +80,7 @@ export async function executeBackgroundTask(
       skillContent: systemContent,
       category: args.category,
       sessionPermission: QUESTION_DENIED_SESSION_PERMISSION,
+      writeOutputToFile: args.write_output_to_file,
     })
 
     // OpenCode TUI's `Task` tool UI calculates toolcalls by looking up
