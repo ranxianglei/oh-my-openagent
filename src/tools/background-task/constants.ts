@@ -6,6 +6,6 @@ export const BACKGROUND_OUTPUT_DESCRIPTION = `Get output from background task. U
 
 IMPORTANT: ONLY call this tool AFTER receiving a <system-reminder> notification for the task. Do NOT call immediately after launching a background task - wait for the notification first.`
 
-export const BACKGROUND_WAIT_DESCRIPTION = `Wait for the next background task to complete from a set of task IDs. Returns as soon as ANY one finishes, with its result and a progress summary. Call repeatedly with remaining IDs until all are done.`
+export const BACKGROUND_WAIT_DESCRIPTION = `Wait for the next background task to complete from a set of task IDs. Returns as soon as ANY one finishes, with metadata-only completed_tasks array (task_id, description, status, duration_s, session_id, output_file_path). Use background_output to fetch full results. Call repeatedly with remaining IDs until all are done.`
 
 export const BACKGROUND_CANCEL_DESCRIPTION = `Cancel running background task(s). Use all=true to cancel ALL before final answer.`
