@@ -37,9 +37,15 @@ export function createGrepTools(ctx: PluginInput): Record<string, ToolDefinition
     execute: async (args, context) => {
       try {
         const globs = args.include ? [args.include] : undefined
+<<<<<<< HEAD
         const runtimeCtx = context as Record<string, unknown>
         const dir = typeof runtimeCtx.directory === "string" ? runtimeCtx.directory : ctx.directory
         const searchPath = args.path ? resolve(dir, args.path) : dir
+||||||| parent of 804d517f (fix(tools): resolve relative paths in glob/grep against project directory)
+        const searchPath = args.path ?? ctx.directory
+=======
+        const searchPath = args.path ? resolve(ctx.directory, args.path) : ctx.directory
+>>>>>>> 804d517f (fix(tools): resolve relative paths in glob/grep against project directory)
         const paths = [searchPath]
         const outputMode = args.output_mode ?? "files_with_matches"
         const headLimit = args.head_limit ?? 0

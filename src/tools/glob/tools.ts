@@ -26,9 +26,17 @@ export function createGlobTools(ctx: PluginInput): Record<string, ToolDefinition
     execute: async (args, context) => {
       try {
         const cli = await resolveGrepCliWithAutoInstall()
+<<<<<<< HEAD
         const runtimeCtx = context as Record<string, unknown>
         const dir = typeof runtimeCtx.directory === "string" ? runtimeCtx.directory : ctx.directory
         const searchPath = args.path ? resolve(dir, args.path) : dir
+||||||| parent of 804d517f (fix(tools): resolve relative paths in glob/grep against project directory)
+        const searchPath = args.path ?? ctx.directory
+        const paths = [searchPath]
+=======
+        const searchPath = args.path ? resolve(ctx.directory, args.path) : ctx.directory
+        const paths = [searchPath]
+>>>>>>> 804d517f (fix(tools): resolve relative paths in glob/grep against project directory)
 
         const result = await runRgFiles(
           {
