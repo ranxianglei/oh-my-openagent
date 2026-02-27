@@ -81,6 +81,8 @@ import {
 } from "./subagent-spawn-limits"
 
 import { writeTaskOutput } from "./task-output-writer"
+import { isCouncilMemberAgent, sendCouncilContinuationNudge, resetCouncilNudgeCount } from "./council-continuation-enforcer"
+import { sessionHasCouncilResponse } from "./council-response-checker"
 type OpencodeClient = PluginInput["client"]
 
 
@@ -984,6 +986,18 @@ export class BackgroundManager {
     return field === "text" || field === "reasoning"
   }
 
+  private async nudgeCouncilMemberIfNeeded(task: BackgroundTask, sessionID: string): Promise<boolean> {
+    if (!isCouncilMemberAgent(task.agent)) return false
+
+    const hasResponse = await sessionHasCouncilResponse(this.client, sessionID)
+    if (hasResponse) {
+      resetCouncilNudgeCount(task.id)
+      return false
+    }
+
+    return sendCouncilContinuationNudge(this.client, task, sessionID)
+  }
+
   handleEvent(event: Event): void {
     const props = event.properties
 
@@ -1135,7 +1149,6 @@ export class BackgroundManager {
       const task = this.findBySession(sessionID)
       if (!task || task.status !== "running") return
 
-      this.recentlyCompactedSessions.add(sessionID)
       if (task.progress) {
         task.progress.lastUpdate = new Date()
       }
@@ -1151,6 +1164,7 @@ export class BackgroundManager {
         recentlyCompactedSessions: this.recentlyCompactedSessions,
         validateSessionHasOutput: (id) => this.validateSessionHasOutput(id),
         checkSessionTodos: (id) => this.checkSessionTodos(id),
+        nudgeCouncilMemberIfNeeded: (task, sid) => this.nudgeCouncilMemberIfNeeded(task, sid),
         tryCompleteTask: (task, source) => this.tryCompleteTask(task, source),
         emitIdleEvent: (sessionID) => this.handleEvent({ type: "session.idle", properties: { sessionID } }),
       })
@@ -1240,7 +1254,6 @@ export class BackgroundManager {
 
       this.rootDescendantCounts.delete(sessionID)
       SessionCategoryRegistry.remove(sessionID)
-      this.recentlyCompactedSessions.delete(sessionID)
     }
 
     if (event.type === "session.status") {
@@ -1705,6 +1718,7 @@ export class BackgroundManager {
     task.status = "completed"
     task.completedAt = new Date()
     this.taskHistory.record(task.parentSessionID, { id: task.id, sessionID: task.sessionID, agent: task.agent, description: task.description, status: "completed", category: task.category, startedAt: task.startedAt, completedAt: task.completedAt })
+    resetCouncilNudgeCount(task.id)
 
     if (task.rootSessionID) {
       this.unregisterRootDescendant(task.rootSessionID)
@@ -2052,6 +2066,7 @@ export class BackgroundManager {
 
       try {
         const sessionStatus = allStatuses[sessionID]
+        task.sessionState = sessionStatus?.type
         // Handle retry before checking running state
         if (sessionStatus?.type === "retry") {
           const retryMessage = typeof (sessionStatus as { message?: string }).message === "string"
