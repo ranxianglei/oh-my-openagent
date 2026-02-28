@@ -282,7 +282,7 @@ export function createToolRegistry(args: {
     ...hashlineToolsRecord,
     prepare_council_prompt: createPrepareCouncilPromptTool(ctx.directory),
     council_finalize: createCouncilFinalize(ctx.directory),
-    council_read: createCouncilRead(),
+    council_read: createCouncilRead(ctx.directory),
   }
 
   for (const toolDefinition of Object.values(allTools)) {
