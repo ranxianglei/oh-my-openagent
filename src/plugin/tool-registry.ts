@@ -32,6 +32,7 @@ import {
   createPrepareCouncilPromptTool,
 } from "../tools"
 import { createCouncilFinalize, createCouncilRead } from "../tools/council-archive"
+import { contextCollector } from "../features/context-injector"
 import { getMainSessionID } from "../features/claude-code-session-state"
 import { filterDisabledTools } from "../shared/disabled-tools"
 import { isTaskSystemEnabled, log } from "../shared"
@@ -281,7 +282,7 @@ export function createToolRegistry(args: {
     ...taskToolsRecord,
     ...hashlineToolsRecord,
     prepare_council_prompt: createPrepareCouncilPromptTool(ctx.directory),
-    council_finalize: createCouncilFinalize(ctx.directory),
+    council_finalize: createCouncilFinalize(ctx.directory, { contextCollector }),
     council_read: createCouncilRead(ctx.directory),
   }
 
