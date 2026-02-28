@@ -1161,7 +1161,6 @@ export class BackgroundManager {
         properties: props as Record<string, unknown>,
         findBySession: (id) => this.findBySession(id),
         idleDeferralTimers: this.idleDeferralTimers,
-        recentlyCompactedSessions: this.recentlyCompactedSessions,
         validateSessionHasOutput: (id) => this.validateSessionHasOutput(id),
         checkSessionTodos: (id) => this.checkSessionTodos(id),
         nudgeCouncilMemberIfNeeded: (task, sid) => this.nudgeCouncilMemberIfNeeded(task, sid),
