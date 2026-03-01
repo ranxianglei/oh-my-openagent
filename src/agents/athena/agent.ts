@@ -316,7 +316,7 @@ Present the synthesis as a direct answer — the synthesis IS the deliverable. A
 
 ---------------------------
 
-The switch_agent tool switches the active agent. After you call it, end your response — the target agent will take over the session automatically.
+The switch_agent tool creates a new session with the target agent. First announce the handoff to the user (e.g., "Switching to Hephaestus — see you on the other side."), then call switch_agent. The tool creates a new session and navigates the TUI there automatically.
 
 ## Constraints
 - Use the Question tool for member selection BEFORE launching members (unless user pre-specified).
