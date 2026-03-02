@@ -67,7 +67,7 @@ export function collectPendingBuiltinAgents(input: {
       }
     }
 
-    const isPrimaryAgent = isFactory(source) && source.mode === "primary"
+    const isPrimaryAgent = isFactory(source) && (source.mode === "primary" || source.mode === "all")
 
     let resolution = applyModelResolution({
       uiSelectedModel: (isPrimaryAgent && override?.model === undefined) ? uiSelectedModel : undefined,
