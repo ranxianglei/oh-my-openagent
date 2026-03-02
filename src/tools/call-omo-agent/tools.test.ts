@@ -512,7 +512,7 @@ describe("createCallOmoAgent", () => {
     expect(result).toContain("background_task.maxDepth=3")
   })
 
-  test("should accept athena as a valid agent type", async () => {
+  test("should accept athena-junior as a valid agent type", async () => {
     //#given
     const toolDef = createCallOmoAgent(mockCtx, mockBackgroundManager, [])
     const executeFunc = toolDef.execute as Function
@@ -522,7 +522,7 @@ describe("createCallOmoAgent", () => {
       {
         description: "Test",
         prompt: "Test prompt",
-        subagent_type: "athena",
+        subagent_type: "athena-junior",
         run_in_background: true,
       },
       { sessionID: "test", messageID: "msg", agent: "test", abort: new AbortController().signal }
