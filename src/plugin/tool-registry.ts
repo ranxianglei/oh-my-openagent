@@ -286,6 +286,7 @@ export function createToolRegistry(args: {
     athena_council: createAthenaCouncilTool({
       backgroundManager: managers.backgroundManager,
       councilConfig: pluginConfig.agents?.athena?.council,
+      directory: ctx.directory,
     }),
   }
 
