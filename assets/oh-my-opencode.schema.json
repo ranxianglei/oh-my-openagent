@@ -5274,6 +5274,10 @@
               ],
               "additionalProperties": false
             },
+            "bulk_launch": {
+              "default": false,
+              "type": "boolean"
+            },
             "non_interactive_mode": {
               "default": "delegation",
               "type": "string",
