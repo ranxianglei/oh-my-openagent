@@ -152,5 +152,8 @@ export function applyToolConfig(params: {
     external_directory: "allow",
     ...(params.config.permission as Record<string, unknown>),
     task: "deny",
+    prepare_council_prompt: "deny",
+    council_finalize: "deny",
+    athena_council: "deny",
   };
 }
