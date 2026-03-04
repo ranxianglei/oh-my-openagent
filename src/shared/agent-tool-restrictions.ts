@@ -13,6 +13,7 @@ const EXPLORATION_AGENT_DENYLIST: Record<string, boolean> = {
   edit: false,
   task: false,
   call_omo_agent: false,
+  switch_agent: false,
 }
 
 const AGENT_RESTRICTIONS: Record<string, Record<string, boolean>> = {
@@ -25,18 +26,21 @@ const AGENT_RESTRICTIONS: Record<string, Record<string, boolean>> = {
     edit: false,
     task: false,
     call_omo_agent: false,
+    switch_agent: false,
   },
 
   metis: {
     write: false,
     edit: false,
     task: false,
+    switch_agent: false,
   },
 
   momus: {
     write: false,
     edit: false,
     task: false,
+    switch_agent: false,
   },
 
   "multimodal-looker": {
@@ -45,6 +49,7 @@ const AGENT_RESTRICTIONS: Record<string, Record<string, boolean>> = {
 
   "sisyphus-junior": {
     task: false,
+    switch_agent: false,
   },
 
   athena: {
@@ -54,6 +59,7 @@ const AGENT_RESTRICTIONS: Record<string, Record<string, boolean>> = {
   "athena-junior": {
     call_omo_agent: false,
     question: false,
+    switch_agent: false,
   },
 
   // NOTE: Athena/council tool restrictions are also defined in:
