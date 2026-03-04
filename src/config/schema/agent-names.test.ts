@@ -56,4 +56,15 @@ describe("agent name schemas", () => {
     //#then
     expect(result.success).toBe(true)
   })
+
+  test("OverridableAgentNameSchema accepts athena-junior", () => {
+    //#given
+    const candidate = "athena-junior"
+
+    //#when
+    const result = OverridableAgentNameSchema.safeParse(candidate)
+
+    //#then
+    expect(result.success).toBe(true)
+  })
 })
