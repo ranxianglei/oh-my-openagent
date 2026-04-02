@@ -43,12 +43,33 @@ interface StartWorkHookOutput {
   parts: Array<{ type: string; text?: string }>
 }
 
+function normalizePlanName(name: string): string {
+  return name.toLowerCase().replace(/[\s_-]+/g, " ").trim()
+}
+
 function findPlanByName(plans: string[], requestedName: string): string | null {
-  const lowerName = requestedName.toLowerCase()
-  const exactMatch = plans.find((p) => getPlanName(p).toLowerCase() === lowerName)
+  const normalizedRequestedName = normalizePlanName(requestedName)
+  const exactMatch = plans.find((p) => normalizePlanName(getPlanName(p)) === normalizedRequestedName)
   if (exactMatch) return exactMatch
-  const partialMatch = plans.find((p) => getPlanName(p).toLowerCase().includes(lowerName))
-  return partialMatch || null
+
+  const partialMatch = plans.find((p) =>
+    normalizePlanName(getPlanName(p)).includes(normalizedRequestedName)
+  )
+  if (partialMatch) return partialMatch
+
+  const reversePartialMatches = plans.filter((p) =>
+    normalizedRequestedName.includes(normalizePlanName(getPlanName(p)))
+  )
+  if (reversePartialMatches.length === 0) return null
+
+  const longestMatchLength = Math.max(
+    ...reversePartialMatches.map((p) => normalizePlanName(getPlanName(p)).length),
+  )
+  const bestReversePartialMatches = reversePartialMatches.filter(
+    (p) => normalizePlanName(getPlanName(p)).length === longestMatchLength,
+  )
+
+  return bestReversePartialMatches.length === 1 ? bestReversePartialMatches[0] : null
 }
 
 function createWorktreeActiveBlock(worktreePath: string): string {
@@ -165,7 +186,26 @@ boulder.json has been created. Read the plan and begin execution.`
         }
       } else {
         const incompletePlans = allPlans.filter((p) => !getPlanProgress(p).isComplete)
-        if (incompletePlans.length > 0) {
+        if (incompletePlans.length === 1) {
+          const planPath = incompletePlans[0]
+          const progress = getPlanProgress(planPath)
+
+          if (existingState) clearBoulderState(ctx.directory)
+          const newState = createBoulderState(planPath, sessionId, activeAgent, worktreePath)
+          writeBoulderState(ctx.directory, newState)
+
+          contextInfo = `
+## Auto-Selected Plan
+
+**Plan**: ${getPlanName(planPath)}
+**Path**: ${planPath}
+**Progress**: ${progress.completed}/${progress.total} tasks
+**Session ID**: ${sessionId}
+**Started**: ${timestamp}
+${worktreeBlock}
+
+boulder.json has been created. Read the plan and begin execution.`
+        } else if (incompletePlans.length > 1) {
           const planList = incompletePlans
             .map((p, i) => {
               const prog = getPlanProgress(p)

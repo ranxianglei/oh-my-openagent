@@ -412,6 +412,261 @@ You are starting a Sisyphus work session.
       expect(output.parts[0].text).toContain("2026-01-15-feature-implementation")
       expect(output.parts[0].text).toContain("Auto-Selected Plan")
     })
+
+    test("should match plan name when request uses underscores and plan uses hyphens", async () => {
+      // given - user uses underscores for a hyphenated plan name
+      const plansDir = join(testDir, ".sisyphus", "plans")
+      mkdirSync(plansDir, { recursive: true })
+
+      const planPath = join(plansDir, "my-feature-plan.md")
+      writeFileSync(planPath, "# My Feature Plan\n- [ ] Task 1")
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [
+          {
+            type: "text",
+            text: createStartWorkPrompt({ userRequest: "my_feature_plan" }),
+          },
+        ],
+      }
+
+      // when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      // then - should normalize separators before matching
+      expect(output.parts[0].text).toContain("my-feature-plan")
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+    })
+
+    test("should match plan name when request uses spaces and plan uses hyphens", async () => {
+      // given - user uses spaces for a hyphenated plan name
+      const plansDir = join(testDir, ".sisyphus", "plans")
+      mkdirSync(plansDir, { recursive: true })
+
+      const planPath = join(plansDir, "my-feature-plan.md")
+      writeFileSync(planPath, "# My Feature Plan\n- [ ] Task 1")
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [
+          {
+            type: "text",
+            text: createStartWorkPrompt({ userRequest: "my feature plan" }),
+          },
+        ],
+      }
+
+      // when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      // then - should normalize separators before matching
+      expect(output.parts[0].text).toContain("my-feature-plan")
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+    })
+
+    test("should match shorter plan name when requested name is longer", async () => {
+      // given - requested name contains the plan name as a subset
+      const plansDir = join(testDir, ".sisyphus", "plans")
+      mkdirSync(plansDir, { recursive: true })
+
+      const planPath = join(plansDir, "feature-impl.md")
+      writeFileSync(planPath, "# Feature Impl\n- [ ] Task 1")
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [
+          {
+            type: "text",
+            text: createStartWorkPrompt({ userRequest: "2026 01 15 feature impl extra" }),
+          },
+        ],
+      }
+
+      // when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      // then - should support reverse partial matching
+      expect(output.parts[0].text).toContain("feature-impl")
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+    })
+
+    test("should auto-select single incomplete plan when explicit plan name matches nothing", async () => {
+      // given - one complete plan and one incomplete plan
+      const plansDir = join(testDir, ".sisyphus", "plans")
+      mkdirSync(plansDir, { recursive: true })
+
+      const completePlanPath = join(plansDir, "plan-done.md")
+      writeFileSync(completePlanPath, "# Plan Done\n- [x] Task 1")
+
+      const incompletePlanPath = join(plansDir, "plan-todo.md")
+      writeFileSync(incompletePlanPath, "# Plan Todo\n- [ ] Task 1")
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [
+          {
+            type: "text",
+            text: createStartWorkPrompt({ userRequest: "nonexistent-plan" }),
+          },
+        ],
+      }
+
+      // when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      // then - should auto-select instead of asking the user
+      expect(output.parts[0].text).toContain("plan-todo")
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+      expect(output.parts[0].text).not.toContain("Ask the user")
+    })
+
+    test("should ask user when explicit plan name matches nothing and multiple incomplete plans exist", async () => {
+      // given - multiple incomplete plans remain ambiguous
+      const plansDir = join(testDir, ".sisyphus", "plans")
+      mkdirSync(plansDir, { recursive: true })
+
+      const planAlphaPath = join(plansDir, "plan-alpha.md")
+      writeFileSync(planAlphaPath, "# Plan Alpha\n- [ ] Task 1")
+
+      const planBetaPath = join(plansDir, "plan-beta.md")
+      writeFileSync(planBetaPath, "# Plan Beta\n- [ ] Task 1")
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [
+          {
+            type: "text",
+            text: createStartWorkPrompt({ userRequest: "nonexistent-plan" }),
+          },
+        ],
+      }
+
+      // when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      // then - should still ask the user to choose
+      expect(output.parts[0].text).toContain("Plan Not Found")
+      expect(output.parts[0].text).toContain("Ask the user")
+      expect(output.parts[0].text).not.toContain("Auto-Selected Plan")
+    })
+
+    test("should prefer the longest reverse partial match over newer shorter matches", async () => {
+      // given - reverse partial candidates with different specificity
+      const plansDir = join(testDir, ".sisyphus", "plans")
+      mkdirSync(plansDir, { recursive: true })
+
+      const specificPlanPath = join(plansDir, "feature-impl.md")
+      writeFileSync(specificPlanPath, "# Feature Impl\n- [ ] Task 1")
+
+      const broadPlanPath = join(plansDir, "feature.md")
+      writeFileSync(broadPlanPath, "# Feature\n- [ ] Task 1")
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [
+          {
+            type: "text",
+            text: createStartWorkPrompt({ userRequest: "2026 01 15 feature impl extra" }),
+          },
+        ],
+      }
+
+      // when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      // then - should pick the most specific reverse partial match
+      expect(output.parts[0].text).toContain("feature-impl")
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+      expect(output.parts[0].text).not.toContain("**Plan**: feature\n")
+    })
+
+    test("should prefer exact matches over broader partial and reverse partial candidates", async () => {
+      // given - exact, partial, and reverse partial candidates all exist
+      const plansDir = join(testDir, ".sisyphus", "plans")
+      mkdirSync(plansDir, { recursive: true })
+
+      const broadPlanPath = join(plansDir, "feature.md")
+      writeFileSync(broadPlanPath, "# Feature\n- [ ] Task 1")
+
+      const partialPlanPath = join(plansDir, "feature-impl.md")
+      writeFileSync(partialPlanPath, "# Feature Impl\n- [ ] Task 1")
+
+      const exactPlanPath = join(plansDir, "feature-impl-extra.md")
+      writeFileSync(exactPlanPath, "# Feature Impl Extra\n- [ ] Task 1")
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [
+          {
+            type: "text",
+            text: createStartWorkPrompt({ userRequest: "feature impl extra" }),
+          },
+        ],
+      }
+
+      // when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      // then - should resolve to the exact normalized match first
+      expect(output.parts[0].text).toContain("feature-impl-extra")
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+      expect(output.parts[0].text).not.toContain("**Plan**: feature-impl\n")
+    })
+
+    test("should avoid selecting a complete shorter reverse match over an incomplete specific plan", async () => {
+      // given - a broader reverse match is complete but the specific match is incomplete
+      const plansDir = join(testDir, ".sisyphus", "plans")
+      mkdirSync(plansDir, { recursive: true })
+
+      const specificPlanPath = join(plansDir, "feature-impl.md")
+      writeFileSync(specificPlanPath, "# Feature Impl\n- [ ] Task 1")
+
+      const broadPlanPath = join(plansDir, "feature.md")
+      writeFileSync(broadPlanPath, "# Feature\n- [x] Task 1")
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [
+          {
+            type: "text",
+            text: createStartWorkPrompt({ userRequest: "2026 01 15 feature impl extra" }),
+          },
+        ],
+      }
+
+      // when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      // then - should still select the incomplete specific plan
+      expect(output.parts[0].text).toContain("feature-impl")
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+      expect(output.parts[0].text).not.toContain("Plan Already Complete")
+    })
   })
 
   describe("session agent management", () => {
