@@ -225,6 +225,15 @@ export async function isDaemonRunning(): Promise<boolean> {
 // Input Sanitization
 export function sanitizeReplyInput(text: string): string {
   return text
+    // Strip ANSI/CSI escape sequences (colors, cursor, device attributes, etc.)
+    .replace(/\x1b\[[0-9;?]*[a-zA-Z]/g, "")
+    // Strip OSC sequences (terminal color queries, title sets, etc.)
+    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, "")
+    // Strip DCS sequences
+    .replace(/\x1bP[^\x1b]*\x1b\\/g, "")
+    // Strip remaining bare ESC sequences
+    .replace(/\x1b[^\[\]P]/g, "")
+    // Strip basic control characters
     .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, "")
     .replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, "")
     .replace(/\r?\n/g, " ")

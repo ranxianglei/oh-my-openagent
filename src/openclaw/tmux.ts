@@ -25,6 +25,25 @@ export async function getTmuxSessionName(): Promise<string | null> {
   }
 }
 
+/**
+ * Strip terminal probe/control sequences from captured pane text.
+ * Tmux capture-pane can include ANSI CSI, OSC, and DCS sequences
+ * from terminal capability probes during pane startup.
+ */
+export function stripTerminalProbes(text: string): string {
+  return text
+    // CSI sequences: ESC [ ... <letter> (device attributes, cursor position, etc.)
+    .replace(/\x1b\[[0-9;?]*[a-zA-Z]/g, "")
+    // OSC sequences: ESC ] ... (BEL or ST) (color queries, window title, etc.)
+    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, "")
+    // DCS sequences: ESC P ... ST
+    .replace(/\x1bP[^\x1b]*\x1b\\/g, "")
+    // Remaining bare ESC sequences
+    .replace(/\x1b[^\[\]P]/g, "")
+    // Bare control characters (except newline/tab)
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, "")
+}
+
 export async function captureTmuxPane(paneId: string, lines = 15): Promise<string | null> {
   try {
     const proc = spawn(
@@ -38,7 +57,8 @@ export async function captureTmuxPane(paneId: string, lines = 15): Promise<strin
     await proc.exited
     const output = await outputPromise
     if (proc.exitCode !== 0) return null
-    return output.trim() || null
+    const cleaned = stripTerminalProbes(output).trim()
+    return cleaned || null
   } catch {
     return null
   }
