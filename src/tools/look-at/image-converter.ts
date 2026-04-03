@@ -34,6 +34,112 @@ const UNSUPPORTED_FORMATS = new Set([
 
 const CONVERSION_TIMEOUT_MS = 30_000
 
+/**
+ * Maximum image dimension (width or height) in pixels.
+ * Anthropic's API rejects images exceeding 2000px in many-image requests.
+ */
+export const MAX_IMAGE_DIMENSION = 2000
+
+function getImageDimensions(imagePath: string): { width: number; height: number } | null {
+  try {
+    if (process.platform === "darwin") {
+      // sips outputs: pixelWidth: 3000\n  pixelHeight: 2000
+      const output = childProcess.execFileSync("sips", ["-g", "pixelWidth", "-g", "pixelHeight", "--", imagePath], {
+        stdio: "pipe",
+        encoding: "utf-8",
+        timeout: CONVERSION_TIMEOUT_MS,
+      })
+      const widthMatch = output.match(/pixelWidth:\s*(\d+)/)
+      const heightMatch = output.match(/pixelHeight:\s*(\d+)/)
+      if (widthMatch && heightMatch) {
+        return { width: parseInt(widthMatch[1], 10), height: parseInt(heightMatch[1], 10) }
+      }
+    }
+
+    // ImageMagick identify: "3000x2000"
+    const identifyCmd = process.platform === "darwin" ? "identify" : "magick"
+    const identifyArgs = process.platform === "darwin" ? ["-format", "%wx%h", "--", imagePath] : ["identify", "-format", "%wx%h", "--", imagePath]
+    const output = childProcess.execFileSync(identifyCmd, identifyArgs, {
+      stdio: "pipe",
+      encoding: "utf-8",
+      timeout: CONVERSION_TIMEOUT_MS,
+    })
+    const match = output.trim().match(/^(\d+)x(\d+)/)
+    if (match) {
+      return { width: parseInt(match[1], 10), height: parseInt(match[2], 10) }
+    }
+  } catch (error) {
+    log(`[image-converter] Failed to get dimensions: ${error}`)
+  }
+  return null
+}
+
+/**
+ * Resize an image if either dimension exceeds MAX_IMAGE_DIMENSION.
+ * Preserves aspect ratio. Returns the path to the resized image (may be a new temp file)
+ * or the original path if no resize was needed.
+ */
+export function resizeImageIfNeeded(imagePath: string, maxDimension: number = MAX_IMAGE_DIMENSION): string {
+  const dimensions = getImageDimensions(imagePath)
+  if (!dimensions) {
+    log("[image-converter] Could not determine dimensions, skipping resize")
+    return imagePath
+  }
+
+  if (dimensions.width <= maxDimension && dimensions.height <= maxDimension) {
+    log(`[image-converter] Image ${dimensions.width}x${dimensions.height} within limits, no resize needed`)
+    return imagePath
+  }
+
+  log(`[image-converter] Image ${dimensions.width}x${dimensions.height} exceeds ${maxDimension}px, resizing`)
+
+  const tempDir = mkdtempSync(join(tmpdir(), "opencode-resize-"))
+  const ext = imagePath.split(".").pop() || "jpg"
+  const outputPath = join(tempDir, `resized.${ext}`)
+
+  try {
+    if (process.platform === "darwin") {
+      try {
+        childProcess.execFileSync("sips", ["--resampleHeightWidthMax", String(maxDimension), "--", imagePath, "--out", outputPath], {
+          stdio: "pipe",
+          encoding: "utf-8",
+          timeout: CONVERSION_TIMEOUT_MS,
+        })
+
+        if (existsSync(outputPath)) {
+          log(`[image-converter] Resized using sips: ${outputPath}`)
+          return outputPath
+        }
+      } catch (sipsError) {
+        log(`[image-converter] sips resize failed: ${sipsError}`)
+      }
+    }
+
+    // ImageMagick fallback
+    try {
+      const magickCmd = process.platform === "darwin" ? "convert" : "magick"
+      childProcess.execFileSync(magickCmd, ["--", imagePath, "-resize", `${maxDimension}x${maxDimension}>`, outputPath], {
+        stdio: "pipe",
+        encoding: "utf-8",
+        timeout: CONVERSION_TIMEOUT_MS,
+      })
+
+      if (existsSync(outputPath)) {
+        log(`[image-converter] Resized using ImageMagick: ${outputPath}`)
+        return outputPath
+      }
+    } catch (convertError) {
+      log(`[image-converter] ImageMagick resize failed: ${convertError}`)
+    }
+
+    log("[image-converter] No resize tool available, returning original")
+    return imagePath
+  } catch (error) {
+    log(`[image-converter] Resize failed: ${error}`)
+    return imagePath
+  }
+}
+
 export function needsConversion(mimeType: string): boolean {
   if (SUPPORTED_FORMATS.has(mimeType)) {
     return false
@@ -67,7 +173,7 @@ export function convertImageToJpeg(inputPath: string, mimeType: string): string 
         
         if (existsSync(outputPath)) {
           log(`[image-converter] Converted using sips: ${outputPath}`)
-          return outputPath
+          return resizeImageIfNeeded(outputPath)
         }
       } catch (sipsError) {
         log(`[image-converter] sips failed: ${sipsError}`)
@@ -84,7 +190,7 @@ export function convertImageToJpeg(inputPath: string, mimeType: string): string 
       
       if (existsSync(outputPath)) {
         log(`[image-converter] Converted using ImageMagick: ${outputPath}`)
-        return outputPath
+        return resizeImageIfNeeded(outputPath)
       }
     } catch (convertError) {
       log(`[image-converter] ImageMagick convert failed: ${convertError}`)
@@ -149,6 +255,16 @@ export function convertBase64ImageToJpeg(
 
     const convertedBuffer = readFileSync(outputPath)
     const convertedBase64 = convertedBuffer.toString("base64")
+
+    // Resize if needed before encoding back to base64
+    const resizedPath = resizeImageIfNeeded(outputPath)
+    if (resizedPath !== outputPath) {
+      tempFiles.push(resizedPath)
+      const resizedBuffer = readFileSync(resizedPath)
+      const resizedBase64 = resizedBuffer.toString("base64")
+      log(`[image-converter] Base64 conversion + resize successful`)
+      return { base64: resizedBase64, tempFiles }
+    }
 
     log(`[image-converter] Base64 conversion successful`)
     

@@ -211,3 +211,104 @@ describe("image-converter command execution safety", () => {
     })
   })
 })
+
+describe("image resizing for API dimension limits", () => {
+  let execFileSyncSpy: ReturnType<typeof spyOn>
+
+  beforeEach(() => {
+    execFileSyncSpy = spyOn(childProcess, "execFileSync").mockImplementation(
+      ((_command: string, _args: string[], _options?: unknown) => "") as typeof childProcess.execFileSync,
+    )
+  })
+
+  afterEach(() => {
+    execFileSyncSpy.mockRestore()
+  })
+
+  test("#given oversized image #when resizeImageIfNeeded called #then resizes to fit max dimension", async () => {
+    const testDir = mkdtempSync(join(tmpdir(), "img-resize-test-"))
+    const inputPath = join(testDir, "large.jpg")
+    writeFileSync(inputPath, "fake-jpeg-data")
+
+    const { resizeImageIfNeeded, MAX_IMAGE_DIMENSION } = await loadImageConverter()
+
+    execFileSyncSpy.mockImplementation(
+      ((command: string, args: string[]) => {
+        // Mock sips -g pixelWidth/pixelHeight returning oversized dimensions
+        if (command === "sips" && args.includes("-g")) {
+          return "  pixelWidth: 4000\n  pixelHeight: 3000\n"
+        }
+        // Mock sips --resampleHeightWidthMax writing output
+        if (command === "sips" && args.includes("--resampleHeightWidthMax")) {
+          const outIndex = args.indexOf("--out")
+          if (outIndex >= 0) writeFileSync(args[outIndex + 1], "resized-jpeg")
+          return ""
+        }
+        return ""
+      }) as typeof childProcess.execFileSync,
+    )
+
+    const result = resizeImageIfNeeded(inputPath)
+
+    expect(result).not.toBe(inputPath)
+    expect(existsSync(result)).toBe(true)
+    expect(MAX_IMAGE_DIMENSION).toBe(2000)
+
+    // Verify sips was called with resize args
+    const resizeCalls = execFileSyncSpy.mock.calls.filter(
+      (call: unknown[]) => call[0] === "sips" && (call[1] as string[]).includes("--resampleHeightWidthMax")
+    )
+    expect(resizeCalls.length).toBe(1)
+
+    if (existsSync(result)) unlinkSync(result)
+    rmSync(dirname(result), { recursive: true, force: true })
+    rmSync(testDir, { recursive: true, force: true })
+  })
+
+  test("#given image within limits #when resizeImageIfNeeded called #then returns original path", async () => {
+    const testDir = mkdtempSync(join(tmpdir(), "img-no-resize-test-"))
+    const inputPath = join(testDir, "small.jpg")
+    writeFileSync(inputPath, "fake-jpeg-data")
+
+    const { resizeImageIfNeeded } = await loadImageConverter()
+
+    execFileSyncSpy.mockImplementation(
+      ((command: string, args: string[]) => {
+        if (command === "sips" && args.includes("-g")) {
+          return "  pixelWidth: 1024\n  pixelHeight: 768\n"
+        }
+        return ""
+      }) as typeof childProcess.execFileSync,
+    )
+
+    const result = resizeImageIfNeeded(inputPath)
+
+    expect(result).toBe(inputPath)
+
+    // Verify no resize was attempted
+    const resizeCalls = execFileSyncSpy.mock.calls.filter(
+      (call: unknown[]) => call[0] === "sips" && (call[1] as string[]).includes("--resampleHeightWidthMax")
+    )
+    expect(resizeCalls.length).toBe(0)
+
+    rmSync(testDir, { recursive: true, force: true })
+  })
+
+  test("#given dimension check fails #when resizeImageIfNeeded called #then returns original path gracefully", async () => {
+    const testDir = mkdtempSync(join(tmpdir(), "img-dim-fail-test-"))
+    const inputPath = join(testDir, "unknown.jpg")
+    writeFileSync(inputPath, "fake-jpeg-data")
+
+    const { resizeImageIfNeeded } = await loadImageConverter()
+
+    execFileSyncSpy.mockImplementation((() => {
+      throw new Error("sips not found")
+    }) as typeof childProcess.execFileSync)
+
+    const result = resizeImageIfNeeded(inputPath)
+
+    expect(result).toBe(inputPath)
+
+    rmSync(testDir, { recursive: true, force: true })
+  })
+})

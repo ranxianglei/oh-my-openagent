@@ -18,6 +18,8 @@ import {
   convertImageToJpeg,
   convertBase64ImageToJpeg,
   cleanupConvertedImage,
+  resizeImageIfNeeded,
+  MAX_IMAGE_DIMENSION,
 } from "./image-converter"
 
 function getTemporaryConversionPath(error: unknown): string | null {
@@ -91,6 +93,26 @@ export function createLookAt(ctx: PluginInput): ToolDefinition {
             }
           }
           
+          // Resize oversized base64 images to fit API dimension limits (issue #3032)
+          try {
+            const { mkdtempSync, writeFileSync, readFileSync, existsSync } = require("node:fs")
+            const { tmpdir } = require("node:os")
+            const { join } = require("node:path")
+            const resizeTmpDir = mkdtempSync(join(tmpdir(), "opencode-resize-b64-"))
+            const ext = finalMimeType.split("/")[1] || "png"
+            const resizeTmpFile = join(resizeTmpDir, `check.${ext}`)
+            writeFileSync(resizeTmpFile, Buffer.from(finalBase64Data, "base64"))
+            const resizedPath = resizeImageIfNeeded(resizeTmpFile)
+            if (resizedPath !== resizeTmpFile && existsSync(resizedPath)) {
+              finalBase64Data = readFileSync(resizedPath).toString("base64")
+              tempFilesToCleanup.push(resizedPath)
+              log(`[look_at] Base64 image resized to fit API limits`)
+            }
+            tempFilesToCleanup.push(resizeTmpFile, resizeTmpDir)
+          } catch (resizeError) {
+            log(`[look_at] Base64 resize check failed (non-fatal): ${resizeError}`)
+          }
+
           filePart = {
             type: "file",
             mime: finalMimeType,
