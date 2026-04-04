@@ -1,0 +1,14 @@
+test: isolate mock-contaminating tests into zauc-mocks-* directories
+
+Bun's `mock.module()` is process-global. Tests that use it permanently
+replace the mocked module for all subsequent tests in the same process.
+The `mock.restore()` only restores function mocks (spyOn), not module mocks.
+
+Move the 4 test files causing contamination into isolated subdirectories:
+- migrate-legacy-plugin-entry.test.ts (mock.module("node:fs"))
+- connected-providers-cache.test.ts (reads cache from filesystem)
+- legacy-plugin-warning.test.ts (reads config from filesystem)
+- subagent-resolver.test.ts (spies on shared modules)
+
+This forces bun to run each in a separate process, preventing the
+process-global mock contamination that's been causing 68 CI failures.

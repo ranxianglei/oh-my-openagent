@@ -4,7 +4,7 @@ const { describe, expect, test, beforeEach, mock, afterAll } = require("bun:test
 const readConnectedProvidersCacheMock = mock(() => null)
 
 async function importFreshModelErrorClassifierModule() {
-  mock.module("./connected-providers-cache", () => ({
+  mock.module("../connected-providers-cache", () => ({
     readConnectedProvidersCache: readConnectedProvidersCacheMock,
   }))
 

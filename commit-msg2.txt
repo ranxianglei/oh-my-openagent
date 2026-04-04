@@ -1,0 +1,5 @@
+test: isolate model-error-classifier.test.ts to prevent module mock contamination
+
+The test mocks `./connected-providers-cache` at module level, which breaks
+subsequent tests that import the real module. Move to isolated directory
+to prevent cross-test contamination.
