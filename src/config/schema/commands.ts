@@ -9,6 +9,11 @@ export const BuiltinCommandNameSchema = z.enum([
   "start-work",
   "stop-continuation",
   "remove-ai-slops",
+  "wiki-init",
+  "wiki-ingest",
+  "wiki-query",
+  "wiki-lint",
+  "wiki-update",
 ])
 
 export type BuiltinCommandName = z.infer<typeof BuiltinCommandNameSchema>

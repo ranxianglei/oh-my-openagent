@@ -8,6 +8,11 @@ import { REFACTOR_TEMPLATE } from "./templates/refactor"
 import { START_WORK_TEMPLATE } from "./templates/start-work"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { REMOVE_AI_SLOPS_TEMPLATE } from "./templates/remove-ai-slops"
+import { WIKI_INIT_TEMPLATE } from "./templates/wiki-init"
+import { WIKI_INGEST_TEMPLATE } from "./templates/wiki-ingest"
+import { WIKI_QUERY_TEMPLATE } from "./templates/wiki-query"
+import { WIKI_LINT_TEMPLATE } from "./templates/wiki-lint"
+import { WIKI_UPDATE_TEMPLATE } from "./templates/wiki-update"
 
 export interface LoadBuiltinCommandsOptions {
   useRegisteredAgents?: boolean
@@ -120,6 +125,51 @@ Timestamp: $TIMESTAMP
 $ARGUMENTS
 </user-request>`,
       argumentHint: "[goal]",
+    },
+    "wiki-init": {
+      description: "(builtin) Bootstrap a new LLM-maintained wiki for knowledge accumulation",
+      template: `<command-instruction>
+${WIKI_INIT_TEMPLATE}
+</command-instruction>`,
+    },
+    "wiki-ingest": {
+      description: "(builtin) Add a source (paper, URL, file, transcript) to the wiki",
+      template: `<command-instruction>
+${WIKI_INGEST_TEMPLATE}
+</command-instruction>
+
+<user-source>
+$ARGUMENTS
+</user-source>`,
+      argumentHint: "<file-path|URL|paste-text>",
+    },
+    "wiki-query": {
+      description: "(builtin) Ask a question against the wiki knowledge base",
+      template: `<command-instruction>
+${WIKI_QUERY_TEMPLATE}
+</command-instruction>
+
+<user-question>
+$ARGUMENTS
+</user-question>`,
+      argumentHint: "<question>",
+    },
+    "wiki-lint": {
+      description: "(builtin) Health audit: find contradictions, broken links, orphans, and coverage gaps",
+      template: `<command-instruction>
+${WIKI_LINT_TEMPLATE}
+</command-instruction>`,
+    },
+    "wiki-update": {
+      description: "(builtin) Revise existing wiki pages when knowledge changes",
+      template: `<command-instruction>
+${WIKI_UPDATE_TEMPLATE}
+</command-instruction>
+
+<update-details>
+$ARGUMENTS
+</update-details>`,
+      argumentHint: "<what-changed>",
     },
   }
 }
