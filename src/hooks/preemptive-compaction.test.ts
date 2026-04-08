@@ -712,4 +712,166 @@ describe("preemptive-compaction", () => {
 
     expect(ctx.client.session.summarize).toHaveBeenCalled()
   })
+
+  // #given successful compaction at 180k and no new message.updated
+  // #when tool.execute.after fires again with tokens below 15% regrowth
+  // #then should NOT re-compact (within-turn guard)
+  it("should block re-compaction when tokens have not grown 15% past last compaction", async () => {
+    //#given
+    const hook = createPreemptiveCompactionHook(ctx as never, {} as never)
+    const sessionID = "ses_regrowth_block"
+
+    await hook.event({
+      event: {
+        type: "message.updated",
+        properties: {
+          info: {
+            role: "assistant",
+            sessionID,
+            providerID: "anthropic",
+            modelID: "claude-sonnet-4-6",
+            finish: true,
+            tokens: {
+              input: 170000,
+              output: 0,
+              reasoning: 0,
+              cache: { read: 10000, write: 0 },
+            },
+          },
+        },
+      },
+    })
+
+    await hook["tool.execute.after"](
+      { tool: "bash", sessionID, callID: "call_regrowth_1" },
+      { title: "", output: "test", metadata: null }
+    )
+
+    expect(ctx.client.session.summarize).toHaveBeenCalledTimes(1)
+
+    //#when - advance past cooldown without a new message.updated (lastCompactedTokens still set)
+    const originalNow = Date.now
+    Date.now = () => originalNow() + 61_000
+    try {
+      await hook["tool.execute.after"](
+        { tool: "bash", sessionID, callID: "call_regrowth_2" },
+        { title: "", output: "test", metadata: null }
+      )
+
+      //#then - regrowth gate blocks re-compaction because tokens unchanged
+      expect(ctx.client.session.summarize).toHaveBeenCalledTimes(1)
+    } finally {
+      Date.now = originalNow
+    }
+  })
+
+  // #given compaction fails with an error
+  // #when tool.execute.after runs
+  // #then a warning toast should be shown
+  it("should show a warning toast when compaction fails", async () => {
+    //#given
+    const hook = createPreemptiveCompactionHook(ctx as never, {} as never)
+    const sessionID = "ses_toast_fail"
+    const summarizeError = new Error("boom")
+    ctx.client.session.summarize.mockRejectedValueOnce(summarizeError)
+
+    await hook.event({
+      event: {
+        type: "message.updated",
+        properties: {
+          info: {
+            role: "assistant",
+            sessionID,
+            providerID: "anthropic",
+            modelID: "claude-sonnet-4-6",
+            finish: true,
+            tokens: {
+              input: 170000,
+              output: 0,
+              reasoning: 0,
+              cache: { read: 10000, write: 0 },
+            },
+          },
+        },
+      },
+    })
+
+    //#when
+    await hook["tool.execute.after"](
+      { tool: "bash", sessionID, callID: "call_toast" },
+      { title: "", output: "test", metadata: null }
+    )
+
+    //#then
+    expect(ctx.client.tui.showToast).toHaveBeenCalledTimes(1)
+    expect(ctx.client.tui.showToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          title: "Compaction failed",
+          variant: "warning",
+          duration: 8000,
+          message: expect.stringContaining("boom"),
+        }),
+      }),
+    )
+  })
+
+  // #given session has cached compaction state and last-compacted tokens
+  // #when session.deleted event fires
+  // #then all per-session state should be cleared and subsequent tool.execute.after should no-op
+  it("should clear lastCompactedTokens state on session.deleted", async () => {
+    //#given
+    const hook = createPreemptiveCompactionHook(ctx as never, {} as never)
+    const sessionID = "ses_cleanup"
+
+    await hook.event({
+      event: {
+        type: "message.updated",
+        properties: {
+          info: {
+            role: "assistant",
+            sessionID,
+            providerID: "anthropic",
+            modelID: "claude-sonnet-4-6",
+            finish: true,
+            tokens: {
+              input: 170000,
+              output: 0,
+              reasoning: 0,
+              cache: { read: 10000, write: 0 },
+            },
+          },
+        },
+      },
+    })
+
+    await hook["tool.execute.after"](
+      { tool: "bash", sessionID, callID: "call_cleanup_1" },
+      { title: "", output: "test", metadata: null }
+    )
+
+    expect(ctx.client.session.summarize).toHaveBeenCalledTimes(1)
+
+    //#when
+    await hook.event({
+      event: {
+        type: "session.deleted",
+        properties: { info: { id: sessionID } },
+      },
+    })
+
+    const originalNow = Date.now
+    Date.now = () => originalNow() + 61_000
+    try {
+      await hook["tool.execute.after"](
+        { tool: "bash", sessionID, callID: "call_cleanup_2" },
+        { title: "", output: "test", metadata: null }
+      )
+
+      //#then - tokenCache wiped on deletion → no-op, summarize not re-invoked
+      expect(ctx.client.session.summarize).toHaveBeenCalledTimes(1)
+    } finally {
+      Date.now = originalNow
+    }
+  })
 })

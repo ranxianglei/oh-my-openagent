@@ -8,9 +8,10 @@ import {
 import { resolveCompactionModel } from "./shared/compaction-model-resolver"
 import { createPostCompactionDegradationMonitor } from "./preemptive-compaction-degradation-monitor"
 
-const PREEMPTIVE_COMPACTION_TIMEOUT_MS = 120_000
+const PREEMPTIVE_COMPACTION_TIMEOUT_MS = 60_000
 const PREEMPTIVE_COMPACTION_THRESHOLD = 0.78
 const PREEMPTIVE_COMPACTION_COOLDOWN_MS = 60_000
+const PREEMPTIVE_COMPACTION_REGROWTH_RATIO = 1.15
 
 declare function setTimeout(handler: () => void, timeout?: number): unknown
 declare function clearTimeout(timeoutID: unknown): void
@@ -68,7 +69,7 @@ export function createPreemptiveCompactionHook(
   modelCacheState?: ContextLimitModelCacheState,
 ) {
   const compactionInProgress = new Set<string>()
-  const compactedSessions = new Set<string>()
+  const lastCompactedTokens = new Map<string, number>()
   const lastCompactionTime = new Map<string, number>()
   const tokenCache = new Map<string, CachedCompactionState>()
 
@@ -85,7 +86,7 @@ export function createPreemptiveCompactionHook(
     _output: { title: string; output: string; metadata: unknown }
   ) => {
     const { sessionID } = input
-    if (compactedSessions.has(sessionID) || compactionInProgress.has(sessionID)) return
+    if (compactionInProgress.has(sessionID)) return
 
     const lastTime = lastCompactionTime.get(sessionID)
     if (lastTime && Date.now() - lastTime < PREEMPTIVE_COMPACTION_COOLDOWN_MS) return
@@ -108,6 +109,15 @@ export function createPreemptiveCompactionHook(
     }
 
     const totalInputTokens = (cached.tokens.input ?? 0) + (cached.tokens.cache?.read ?? 0)
+
+    const previousCompactedTokens = lastCompactedTokens.get(sessionID)
+    if (
+      previousCompactedTokens !== undefined
+      && totalInputTokens < previousCompactedTokens * PREEMPTIVE_COMPACTION_REGROWTH_RATIO
+    ) {
+      return
+    }
+
     const usageRatio = totalInputTokens / actualLimit
     if (usageRatio < PREEMPTIVE_COMPACTION_THRESHOLD || !cached.modelID) return
 
@@ -132,9 +142,17 @@ export function createPreemptiveCompactionHook(
         `Compaction summarize timed out after ${PREEMPTIVE_COMPACTION_TIMEOUT_MS}ms`,
       )
 
-      compactedSessions.add(sessionID)
+      lastCompactedTokens.set(sessionID, totalInputTokens)
     } catch (error) {
       log("[preemptive-compaction] Compaction failed", { sessionID, error: String(error) })
+      ctx.client.tui.showToast({
+        body: {
+          title: "Compaction failed",
+          message: `Preemptive compaction timed out or failed for session. Context may grow large. Error: ${String(error)}`,
+          variant: "warning",
+          duration: 8000,
+        },
+      }).catch(() => {})
     } finally {
       compactionInProgress.delete(sessionID)
     }
@@ -147,7 +165,7 @@ export function createPreemptiveCompactionHook(
       const sessionID = (props?.info as { id?: string } | undefined)?.id
       if (sessionID) {
         compactionInProgress.delete(sessionID)
-        compactedSessions.delete(sessionID)
+        lastCompactedTokens.delete(sessionID)
         lastCompactionTime.delete(sessionID)
         tokenCache.delete(sessionID)
         postCompactionMonitor.clear(sessionID)
@@ -184,7 +202,7 @@ export function createPreemptiveCompactionHook(
           tokens: info.tokens,
         })
       }
-      compactedSessions.delete(info.sessionID)
+      lastCompactedTokens.delete(info.sessionID)
 
       await postCompactionMonitor.onAssistantMessageUpdated({
         sessionID: info.sessionID,
