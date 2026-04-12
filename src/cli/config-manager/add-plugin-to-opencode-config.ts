@@ -1,14 +1,26 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import type { ConfigMergeResult } from "../types"
-import { PLUGIN_NAME, LEGACY_PLUGIN_NAME } from "../../shared"
+import {
+  PLUGIN_NAME,
+  LEGACY_PLUGIN_NAME,
+  isAcceptedLocalPluginEntry,
+} from "../../shared"
 import { backupConfigFile } from "./backup-config"
 import { getConfigDir } from "./config-context"
 import { ensureConfigDirectoryExists } from "./ensure-config-directory-exists"
 import { formatErrorWithSuggestion } from "./format-error-with-suggestion"
 import { detectConfigFormat } from "./opencode-config-format"
 import { parseOpenCodeConfigFileWithError, type OpenCodeConfig } from "./parse-opencode-config-file"
-import { getPluginNameWithVersion } from "./plugin-name-with-version"
+import { getPreferredPluginEntry } from "./preferred-plugin-entry"
 import { checkVersionCompatibility, extractVersionFromPluginEntry } from "./version-compatibility"
+
+function isOurPluginEntry(entry: string): boolean {
+  return entry === PLUGIN_NAME ||
+    entry.startsWith(`${PLUGIN_NAME}@`) ||
+    entry === LEGACY_PLUGIN_NAME ||
+    entry.startsWith(`${LEGACY_PLUGIN_NAME}@`) ||
+    isAcceptedLocalPluginEntry(entry)
+}
 
 export async function addPluginToOpenCodeConfig(currentVersion: string): Promise<ConfigMergeResult> {
   try {
@@ -22,7 +34,7 @@ export async function addPluginToOpenCodeConfig(currentVersion: string): Promise
   }
 
   const { format, path } = detectConfigFormat()
-  const pluginEntry = await getPluginNameWithVersion(currentVersion, PLUGIN_NAME)
+  const pluginEntry = await getPreferredPluginEntry(currentVersion)
 
   try {
     if (format === "none") {
@@ -43,18 +55,7 @@ export async function addPluginToOpenCodeConfig(currentVersion: string): Promise
     const config = parseResult.config
     const plugins = config.plugin ?? []
 
-    const canonicalEntries = plugins.filter(
-      (plugin) => plugin === PLUGIN_NAME || plugin.startsWith(`${PLUGIN_NAME}@`)
-    )
-    const legacyEntries = plugins.filter(
-      (plugin) => plugin === LEGACY_PLUGIN_NAME || plugin.startsWith(`${LEGACY_PLUGIN_NAME}@`)
-    )
-    const otherPlugins = plugins.filter(
-      (plugin) => !(plugin === PLUGIN_NAME || plugin.startsWith(`${PLUGIN_NAME}@`))
-        && !(plugin === LEGACY_PLUGIN_NAME || plugin.startsWith(`${LEGACY_PLUGIN_NAME}@`))
-    )
-
-    const existingEntry = canonicalEntries[0] ?? legacyEntries[0]
+    const existingEntry = plugins.find(isOurPluginEntry)
     if (existingEntry) {
       const installedVersion = extractVersionFromPluginEntry(existingEntry)
       const compatibility = checkVersionCompatibility(installedVersion, currentVersion)
@@ -77,7 +78,7 @@ export async function addPluginToOpenCodeConfig(currentVersion: string): Promise
       }
     }
 
-    const normalizedPlugins = [...otherPlugins]
+    const normalizedPlugins = plugins.filter((plugin) => !isOurPluginEntry(plugin))
 
     normalizedPlugins.push(pluginEntry)
 

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test"
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { pathToFileURL } from "node:url"
 
 import { resetConfigContext } from "./config-context"
 import { detectCurrentConfig } from "./detect-current-config"
@@ -32,6 +33,25 @@ describe("detectCurrentConfig - single package detection", () => {
   it("detects both legacy and canonical plugin entries", () => {
     // given
     writeFileSync(testConfigPath, JSON.stringify({ plugin: ["oh-my-opencode", "oh-my-openagent@3.11.0"] }, null, 2) + "\n", "utf-8")
+
+    // when
+    const result = detectCurrentConfig()
+
+    // then
+    expect(result.isInstalled).toBe(true)
+  })
+
+  it("detects a local file URL plugin entry", () => {
+    // given
+    const pluginDir = join(testConfigDir, "plugin-root")
+    mkdirSync(pluginDir, { recursive: true })
+    writeFileSync(
+      join(pluginDir, "package.json"),
+      JSON.stringify({ name: "oh-my-opencode" }, null, 2) + "\n",
+      "utf-8",
+    )
+    const localPluginEntry = pathToFileURL(pluginDir).href
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: [localPluginEntry] }, null, 2) + "\n", "utf-8")
 
     // when
     const result = detectCurrentConfig()
@@ -94,7 +114,8 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-openagent"])
+    expect(savedConfig.plugin).toHaveLength(1)
+    expect(savedConfig.plugin[0]).toMatch(/^file:\/\//)
   })
 
   it("upgrades a bare legacy plugin entry to canonical", async () => {
@@ -107,7 +128,8 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-openagent"])
+    expect(savedConfig.plugin).toHaveLength(1)
+    expect(savedConfig.plugin[0]).toMatch(/^file:\/\//)
   })
 
   it("updates a version-pinned legacy entry to the requested version", async () => {
@@ -121,7 +143,8 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-openagent@3.16.0"])
+    expect(savedConfig.plugin).toHaveLength(1)
+    expect(savedConfig.plugin[0]).toMatch(/^file:\/\//)
     getPluginNameWithVersionSpy.mockRestore()
   })
 
@@ -135,7 +158,8 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-openagent"])
+    expect(savedConfig.plugin).toHaveLength(1)
+    expect(savedConfig.plugin[0]).toMatch(/^file:\/\//)
   })
 
   it("preserves a canonical entry when the same version is re-installed", async () => {
@@ -149,8 +173,31 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
-    expect(savedConfig.plugin).toEqual(["oh-my-openagent@3.10.0"])
+    expect(savedConfig.plugin).toHaveLength(1)
+    expect(savedConfig.plugin[0]).toMatch(/^file:\/\//)
     getPluginNameWithVersionSpy.mockRestore()
+  })
+
+  it("replaces an existing local file URL entry without duplicating it", async () => {
+    // given
+    const pluginDir = join(testConfigDir, "plugin-root")
+    mkdirSync(pluginDir, { recursive: true })
+    writeFileSync(
+      join(pluginDir, "package.json"),
+      JSON.stringify({ name: "oh-my-opencode" }, null, 2) + "\n",
+      "utf-8",
+    )
+    const existingLocalEntry = pathToFileURL(pluginDir).href
+    writeFileSync(testConfigPath, JSON.stringify({ plugin: [existingLocalEntry] }, null, 2) + "\n", "utf-8")
+
+    // when
+    const result = await addPluginToOpenCodeConfig("3.10.0")
+
+    // then
+    expect(result.success).toBe(true)
+    const savedConfig = JSON.parse(readFileSync(testConfigPath, "utf-8"))
+    expect(savedConfig.plugin).toHaveLength(1)
+    expect(savedConfig.plugin[0]).toMatch(/^file:\/\//)
   })
 
   it("blocks a downgrade for a version-pinned canonical entry", async () => {
@@ -181,7 +228,7 @@ describe("addPluginToOpenCodeConfig - single package writes", () => {
     // then
     expect(result.success).toBe(true)
     const savedContent = readFileSync(testConfigPath, "utf-8")
-    expect(savedContent.includes('"plugin": [\n    "oh-my-openagent"\n  ]')).toBe(true)
+    expect(savedContent.includes('"plugin": [\n    "file://')).toBe(true)
     expect(savedContent.includes("oh-my-opencode")).toBe(false)
   })
 })
