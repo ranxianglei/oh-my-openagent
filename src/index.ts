@@ -19,6 +19,7 @@ import { detectExternalSkillPlugin, getSkillPluginConflictWarning } from "./shar
 import { startBackgroundCheck as startTmuxCheck } from "./tools/interactive-bash"
 import { lspManager } from "./tools/lsp/client"
 import { createPluginPostHog, getPostHogDistinctId } from "./shared/posthog"
+import { syncBootstrapAgents } from "./plugin-handlers/opencode-agent-bootstrap"
 
 let activePluginDispose: PluginDispose | null = null
 
@@ -38,6 +39,13 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
   await activePluginDispose?.()
 
   const pluginConfig = loadPluginConfig(ctx.directory, ctx)
+
+  syncBootstrapAgents({
+    directory: ctx.directory,
+    pluginConfig,
+  }).catch((error) => {
+    log("[OhMyOpenCodePlugin] bootstrap agent sync failed", { error: String(error) })
+  })
 
   const posthog = createPluginPostHog()
   const distinctId = getPostHogDistinctId()

@@ -4,10 +4,13 @@ import type { InstallArgs } from "./types"
 import {
   addPluginToOpenCodeConfig,
   detectCurrentConfig,
+  getConfigDir,
   getOpenCodeVersion,
   isOpenCodeInstalled,
   writeOmoConfig,
 } from "./config-manager"
+import { loadPluginConfig } from "../plugin-config"
+import { syncBootstrapAgents } from "../plugin-handlers/opencode-agent-bootstrap"
 import {
   SYMBOLS,
   argsToConfig,
@@ -123,6 +126,14 @@ export async function runCliInstaller(args: InstallArgs, version: string): Promi
     return 1
   }
   printSuccess(`Config written ${SYMBOLS.arrow} ${color.dim(omoResult.configPath)}`)
+
+  const pluginConfig = loadPluginConfig(getConfigDir(), {})
+  const bootstrapResult = await syncBootstrapAgents({
+    directory: getConfigDir(),
+    targetDir: getConfigDir(),
+    pluginConfig,
+  })
+  printSuccess(`Bootstrapped ${bootstrapResult.agentCount} OpenCode agent files`)
 
   printBox(formatConfigSummary(config), isUpdate ? "Updated Configuration" : "Installation Complete")
 

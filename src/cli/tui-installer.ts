@@ -5,10 +5,13 @@ import type { InstallArgs } from "./types"
 import {
   addPluginToOpenCodeConfig,
   detectCurrentConfig,
+  getConfigDir,
   getOpenCodeVersion,
   isOpenCodeInstalled,
   writeOmoConfig,
 } from "./config-manager"
+import { loadPluginConfig } from "../plugin-config"
+import { syncBootstrapAgents } from "../plugin-handlers/opencode-agent-bootstrap"
 import { detectedToInitialValues, formatConfigSummary, SYMBOLS } from "./install-validators"
 import { getUnsupportedOpenCodeVersionMessage } from "./minimum-opencode-version"
 import { promptInstallConfig } from "./tui-install-prompts"
@@ -69,6 +72,15 @@ export async function runTuiInstaller(args: InstallArgs, version: string): Promi
     return 1
   }
   spinner.stop(`Config written to ${color.cyan(omoResult.configPath)}`)
+
+  spinner.start("Bootstrapping OpenCode agent files")
+  const pluginConfig = loadPluginConfig(getConfigDir(), {})
+  const bootstrapResult = await syncBootstrapAgents({
+    directory: getConfigDir(),
+    targetDir: getConfigDir(),
+    pluginConfig,
+  })
+  spinner.stop(`Bootstrapped ${bootstrapResult.agentCount} OpenCode agent files`)
 
   if (!config.hasClaude) {
     p.log.info(

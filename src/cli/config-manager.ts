@@ -2,6 +2,7 @@ export type { ConfigContext } from "./config-manager/config-context"
 export {
   initConfigContext,
   getConfigContext,
+  getConfigDir,
   resetConfigContext,
 } from "./config-manager/config-context"
 
