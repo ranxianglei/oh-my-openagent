@@ -175,8 +175,8 @@ describe("applyAgentConfig builtin override protection", () => {
     })
 
     // then every registered agent key must be HTTP-header-safe (no parentheses)
-    // Parentheses in agent names cause HTTP header validation errors in
-    // x-opencode-agent-name and prevent the agents from showing in the OpenCode UI.
+    // Agent keys can flow into HTTP header values in some plugin paths.
+    // Parentheses and ZWSP characters violate RFC 7230 header value rules.
     for (const key of Object.keys(result)) {
       expect(key).not.toMatch(/[()]/)
     }
