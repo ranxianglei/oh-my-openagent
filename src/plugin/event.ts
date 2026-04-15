@@ -261,7 +261,6 @@ export function createEventHandler(args: {
     await runEventHookSafely("compactionTodoPreserver", hooks.compactionTodoPreserver?.event, input);
     await runEventHookSafely("writeExistingFileGuard", hooks.writeExistingFileGuard?.event, input);
     await runEventHookSafely("atlasHook", hooks.atlasHook?.handler, input);
-    await runEventHookSafely("agentSwitchHook", hooks.agentSwitchHook?.event, input);
     await runEventHookSafely("autoSlashCommand", hooks.autoSlashCommand?.event, input);
   };
 

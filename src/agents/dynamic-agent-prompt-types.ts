@@ -1,9 +1,10 @@
-import type { AgentPromptMetadata } from "./types"
+import type { AgentPromptMetadata, AgentMode } from "./types"
 
 export interface AvailableAgent {
   name: string
   description: string
   metadata: AgentPromptMetadata
+  mode?: AgentMode
 }
 
 export interface AvailableTool {
