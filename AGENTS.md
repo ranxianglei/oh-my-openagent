@@ -104,7 +104,7 @@ Fields: agents (14 overridable, 21 fields each), categories (8 built-in + custom
 - **Test pattern**: Bun test (`bun:test`), co-located `*.test.ts`, given/when/then style (nested describe with `#given`/`#when`/`#then` prefixes or inline `// given` / `// when` / `// then` comments)
 - **CI test split**: `script/run-ci-tests.ts` auto-detects `mock.module()` usage, isolates those tests in separate processes
 - **Factory pattern**: `createXXX()` for all tools, hooks, agents
-- **Hook tiers**: Session (24) → Tool-Guard (14) → Transform (5) → Continuation (7) → Skill (2)
+- **Hook tiers**: Session (23) → Tool-Guard (14) → Transform (5) → Continuation (7) → Skill (2)
 - **Agent modes**: `primary` (respects UI model) vs `subagent` (own fallback chain) vs `all`
 - **Model resolution**: 4-step: override → category-default → provider-fallback → system-default
 - **Config format**: JSONC with comments, Zod v4 validation, snake_case keys
