@@ -592,8 +592,9 @@ Built-in `session-notification` support was removed from oh-my-opencode.
 - Removed hook key: `session-notification`
 - Removed config key: `notification.force_enable`
 - Migration automatically cleans both from legacy configs at startup
+- oh-my-opencode now bundles KDCO notify and auto-registers one user-scope bundled notify plugin entry
 
-For session alerts and cmux-related terminal UX, install KDCO `opencode-notify` (`kdco/notify`) in your OpenCode plugin list.
+Do not add separate `kdco/notify` entries manually. Recognized legacy `kdco/notify` entries are migrated to the bundled owner. Custom/unsafe notify entries fail loudly with cleanup guidance to prevent duplicate owners.
 
 `background-notification` is unchanged because it handles parent-session reminder injection for background tasks, not notification transport.
 

@@ -37,6 +37,12 @@ const mockCreateHooks = mock(() => ({
 const mockCreatePluginInterface = mock(() => ({}))
 const mockInitializeOpenClaw = mock(async () => {})
 const mockStartTmuxCheck = mock(() => {})
+const mockEnsureBundledNotifyOwnership = mock(() => ({
+  skipped: false,
+  changedUserConfig: false,
+  changedProjectConfig: false,
+  canonicalEntry: "file:///tmp/dist/opencode-notify",
+}))
 
 let pluginModule: (typeof import("./index"))["default"]
 
@@ -48,6 +54,10 @@ function installIndexModuleMocks(): void {
   mock.module("./shared/external-plugin-detector", () => ({
     detectExternalSkillPlugin: mockDetectExternalSkillPlugin,
     getSkillPluginConflictWarning: mockGetSkillPluginConflictWarning,
+  }))
+
+  mock.module("./shared/bundled-notify-ownership", () => ({
+    ensureBundledNotifyOwnership: mockEnsureBundledNotifyOwnership,
   }))
 
   mock.module("./shared", () => ({
@@ -130,6 +140,7 @@ describe("oh-my-openagent plugin module", () => {
     mockCreatePluginInterface.mockClear()
     mockInitializeOpenClaw.mockClear()
     mockStartTmuxCheck.mockClear()
+    mockEnsureBundledNotifyOwnership.mockClear()
   })
 
   afterEach(() => {
@@ -157,6 +168,7 @@ describe("oh-my-openagent plugin module", () => {
     } as Parameters<typeof pluginModule.server>[0])
 
     // then
+    expect(mockEnsureBundledNotifyOwnership).toHaveBeenCalledWith({ projectDirectory: "/tmp/project" })
     expect(mockInitializeOpenClaw).toHaveBeenCalledTimes(1)
     expect(mockInitializeOpenClaw).toHaveBeenCalledWith(openclawConfig)
   })

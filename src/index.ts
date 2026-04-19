@@ -17,6 +17,7 @@ import { injectServerAuthIntoClient, log, logLegacyPluginStartupWarning } from "
 import { detectExternalSkillPlugin, getSkillPluginConflictWarning } from "./shared/external-plugin-detector"
 import { startBackgroundCheck as startTmuxCheck } from "./tools/interactive-bash"
 import { createPluginPostHog, getPostHogDistinctId } from "./shared/posthog"
+import { ensureBundledNotifyOwnership } from "./shared/bundled-notify-ownership"
 
 const serverPlugin: Plugin = async (input, _options): Promise<Hooks> => {
   initConfigContext("opencode", null)
@@ -24,6 +25,9 @@ const serverPlugin: Plugin = async (input, _options): Promise<Hooks> => {
     directory: input.directory,
   })
   logLegacyPluginStartupWarning()
+  ensureBundledNotifyOwnership({
+    projectDirectory: input.directory,
+  })
 
   const skillPluginCheck = detectExternalSkillPlugin(input.directory)
   if (skillPluginCheck.detected && skillPluginCheck.pluginName) {

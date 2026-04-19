@@ -1,8 +1,10 @@
 // postinstall.mjs
 // Runs after npm install to verify platform binary is available
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { dirname } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { getPlatformPackageCandidates, getBinaryPath } from "./bin/platform.js";
 
 const require = createRequire(import.meta.url);
@@ -127,6 +129,32 @@ function main() {
     console.warn(`⚠ oh-my-opencode: ${error.message}`);
     console.warn(`  The CLI may not work on this platform.`);
     // Don't fail installation - let user try anyway
+  }
+
+  void runBundledNotifyBootstrap();
+}
+
+async function runBundledNotifyBootstrap() {
+  try {
+    const packageRoot = dirname(fileURLToPath(import.meta.url));
+    const ownershipModulePath = `${packageRoot}/dist/shared/bundled-notify-ownership.js`;
+    if (!existsSync(ownershipModulePath)) {
+      return;
+    }
+
+    const ownershipModule = await import(pathToFileURL(ownershipModulePath).href);
+    if (typeof ownershipModule.ensureBundledNotifyOwnership !== "function") {
+      return;
+    }
+
+    ownershipModule.ensureBundledNotifyOwnership({
+      projectDirectory: process.cwd(),
+      packageRoot,
+      env: process.env,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`⚠ oh-my-opencode bundled notify bootstrap: ${message}`);
   }
 }
 

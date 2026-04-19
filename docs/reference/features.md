@@ -792,7 +792,7 @@ Hooks intercept and modify behavior at key points in the agent lifecycle across 
 | **agent-usage-reminder**     | PostToolUse + Event | Reminds you to leverage specialized agents for better results.                                     |
 | **question-label-truncator** | PreToolUse          | Truncates long question labels in the Question tool UI.                                            |
 
-Session-level OS alerts are now provided by KDCO `opencode-notify` (`kdco/notify`). oh-my-opencode no longer owns built-in `session-notification` transport.
+Session-level OS alerts are provided by a bundled KDCO `opencode-notify` integration managed by oh-my-opencode. Separate external `kdco/notify` plugin installs are not required.
 
 #### Task Management
 

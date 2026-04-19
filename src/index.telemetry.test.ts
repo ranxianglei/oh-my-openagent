@@ -39,6 +39,12 @@ const mockCreatePluginPostHog = mock(() => ({
   shutdown: mock(async () => {}),
 }))
 const mockGetPostHogDistinctId = mock(() => "plugin-distinct-id")
+const mockEnsureBundledNotifyOwnership = mock(() => ({
+  skipped: false,
+  changedUserConfig: false,
+  changedProjectConfig: false,
+  canonicalEntry: "file:///tmp/dist/opencode-notify",
+}))
 
 function installModuleMocks(): void {
   mock.module("./cli/config-manager/config-context", () => ({
@@ -47,6 +53,9 @@ function installModuleMocks(): void {
   mock.module("./shared/external-plugin-detector", () => ({
     detectExternalSkillPlugin: mock(() => ({ detected: false, pluginName: null })),
     getSkillPluginConflictWarning: mock(() => ""),
+  }))
+  mock.module("./shared/bundled-notify-ownership", () => ({
+    ensureBundledNotifyOwnership: mockEnsureBundledNotifyOwnership,
   }))
   mock.module("./shared", () => ({
     injectServerAuthIntoClient: mockInjectServerAuthIntoClient,

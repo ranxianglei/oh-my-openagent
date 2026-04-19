@@ -116,7 +116,7 @@ export function migrateConfigFile(
   if ("notification" in copy) {
     delete copy.notification
     needsWrite = true
-    log("Removed obsolete notification config; use KDCO opencode-notify (kdco/notify) for session alerts")
+    log("Removed obsolete notification config; session alerts now use the bundled KDCO notify integration")
   }
 
   if (copy.disabled_agents && Array.isArray(copy.disabled_agents)) {
