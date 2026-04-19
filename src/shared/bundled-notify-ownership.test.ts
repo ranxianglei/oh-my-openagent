@@ -98,6 +98,35 @@ describe("ensureBundledNotifyOwnership", () => {
     expect(readConfig(userConfigPath).plugin).toEqual(["oh-my-openagent", canonicalEntry])
   })
 
+  test("does not classify unrelated notify-like plugin names as unsafe", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["team-notify-center", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const result = ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(result.changedUserConfig).toBe(true)
+    expect(readConfig(userConfigPath).plugin).toEqual(["team-notify-center", "oh-my-openagent", canonicalEntry])
+  })
+
+  test("migrates stale bundled dist/opencode-notify file URL to canonical bundled entry", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    const stalePackageRoot = join(rootDir, "package-old")
+    mkdirSync(join(stalePackageRoot, "dist", "opencode-notify"), { recursive: true })
+    const staleBundledEntry = getBundledNotifyCanonicalEntry(stalePackageRoot)
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: [staleBundledEntry, "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const result = ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(result.changedUserConfig).toBe(true)
+    expect(readConfig(userConfigPath).plugin).toEqual(["oh-my-openagent", canonicalEntry])
+  })
+
   test("removes project recognized notify and adds bundled user owner", () => {
     // given
     const projectConfigPath = join(projectDir, ".opencode", "opencode.json")

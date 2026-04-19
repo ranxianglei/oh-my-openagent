@@ -66,11 +66,41 @@ function isRecognizedExternalNotifyId(entry: string): boolean {
   return KNOWN_EXTERNAL_NOTIFY_IDS.some((base) => normalized === base || normalized.startsWith(`${base}@`))
 }
 
-function looksLikeNotifyPlugin(entry: string): boolean {
-  const normalized = entry.trim().toLowerCase()
-  return normalized.includes("kdco/notify")
-    || normalized.includes("opencode-notify")
-    || normalized.includes("notify")
+function normalizePathForComparison(pathValue: string): string {
+  return resolve(pathValue).replace(/\\/g, "/").replace(/\/+$/, "")
+}
+
+function tryParseFileUrlPath(entry: string): string | null {
+  if (!entry.startsWith("file://")) return null
+
+  try {
+    return fileURLToPath(entry)
+  } catch {
+    return null
+  }
+}
+
+function hasBundledNotifyArtifactPathShape(pathValue: string): boolean {
+  const normalizedPath = normalizePathForComparison(pathValue)
+  return normalizedPath.endsWith("/dist/opencode-notify")
+}
+
+function isBundledNotifyArtifactEntry(entry: string, canonicalEntry: string): boolean {
+  if (entry === canonicalEntry) return true
+
+  const filePath = tryParseFileUrlPath(entry)
+  if (!filePath) return false
+
+  return hasBundledNotifyArtifactPathShape(filePath)
+}
+
+function isPathBasedNotifyEntry(entry: string): boolean {
+  if (!isPathLikePluginEntry(entry)) return false
+
+  const filePath = tryParseFileUrlPath(entry)
+  const pathCandidate = filePath ?? entry
+  const normalizedPath = normalizePathForComparison(pathCandidate).toLowerCase()
+  return normalizedPath.includes("/opencode-notify")
 }
 
 function areTupleOptionsEmptyOrDefault(options: unknown[]): boolean {
@@ -86,7 +116,7 @@ function areTupleOptionsEmptyOrDefault(options: unknown[]): boolean {
 
 function classifyPluginEntry(entry: OpenCodePluginEntry, index: number, canonicalEntry: string): ClassifiedEntry {
   if (typeof entry === "string") {
-    if (entry === canonicalEntry) {
+    if (isBundledNotifyArtifactEntry(entry, canonicalEntry)) {
       return { kind: "bundled", entry, index }
     }
 
@@ -94,11 +124,7 @@ function classifyPluginEntry(entry: OpenCodePluginEntry, index: number, canonica
       return { kind: "recognized-external", entry, index }
     }
 
-    if (!looksLikeNotifyPlugin(entry)) {
-      return { kind: "other", entry, index }
-    }
-
-    if (isPathLikePluginEntry(entry)) {
+    if (isPathBasedNotifyEntry(entry)) {
       return {
         kind: "unsafe-external",
         entry,
@@ -107,16 +133,11 @@ function classifyPluginEntry(entry: OpenCodePluginEntry, index: number, canonica
       }
     }
 
-    return {
-      kind: "unsafe-external",
-      entry,
-      index,
-      reason: "notify plugin entry is not an exact recognized kdco/notify identifier",
-    }
+    return { kind: "other", entry, index }
   }
 
   const [tupleKey, ...tupleOptions] = entry
-  if (tupleKey === canonicalEntry) {
+  if (isBundledNotifyArtifactEntry(tupleKey, canonicalEntry)) {
     if (areTupleOptionsEmptyOrDefault(tupleOptions)) {
       return { kind: "bundled", entry, index }
     }
@@ -142,12 +163,12 @@ function classifyPluginEntry(entry: OpenCodePluginEntry, index: number, canonica
     }
   }
 
-  if (looksLikeNotifyPlugin(tupleKey)) {
+  if (isPathBasedNotifyEntry(tupleKey)) {
     return {
       kind: "unsafe-external",
       entry,
       index,
-      reason: "tuple-based notify entry is not an exact recognized kdco/notify identifier",
+      reason: "path-based notify plugin entries are not auto-migrated",
     }
   }
 

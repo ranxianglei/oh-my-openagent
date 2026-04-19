@@ -9,13 +9,19 @@ interface Todo {
   id?: string
 }
 
-export async function hasIncompleteTodos(ctx: PluginInput, sessionID: string): Promise<boolean> {
+export type SessionTodoState = "pending" | "clear" | "unknown"
+
+export async function getSessionTodoState(ctx: PluginInput, sessionID: string): Promise<SessionTodoState> {
   try {
     const response = await ctx.client.session.todo({ path: { id: sessionID } })
     const todos = normalizeSDKResponse(response, [] as Todo[], { preferResponseOnMissingData: true })
-    if (!todos || todos.length === 0) return false
-    return getIncompleteCount(todos) > 0
+    if (!todos || todos.length === 0) return "clear"
+    return getIncompleteCount(todos) > 0 ? "pending" : "clear"
   } catch {
-    return false
+    return "unknown"
   }
+}
+
+export async function hasIncompleteTodos(ctx: PluginInput, sessionID: string): Promise<boolean> {
+  return (await getSessionTodoState(ctx, sessionID)) === "pending"
 }

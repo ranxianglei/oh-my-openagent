@@ -6,6 +6,11 @@ interface TodoItem {
   status: string
 }
 
+type TodoResponseMode = {
+  todos?: TodoItem[]
+  throwError?: boolean
+}
+
 function createMockShellExecutor(notificationCommands: string[]) {
   return (cmd: TemplateStringsArray | string, ...values: unknown[]) => {
     const command = typeof cmd === "string"
@@ -35,12 +40,18 @@ function createMockShellExecutor(notificationCommands: string[]) {
   }
 }
 
-function createPluginInput(todos: TodoItem[], notificationCommands: string[]) {
+function createPluginInput(todoMode: TodoResponseMode, notificationCommands: string[]) {
   return {
     $: createMockShellExecutor(notificationCommands),
     client: {
       session: {
-        todo: async () => ({ data: todos }),
+        todo: async () => {
+          if (todoMode.throwError) {
+            throw new Error("todo fetch failed")
+          }
+
+          return { data: todoMode.todos ?? [] }
+        },
       },
     },
   } as Parameters<typeof bundledNotifyPlugin.server>[0]
@@ -60,7 +71,7 @@ describe("bundled-opencode-notify idle suppression", () => {
     // given
     const notificationCommands: string[] = []
     const hooks = await bundledNotifyPlugin.server(
-      createPluginInput([{ status: "in_progress" }], notificationCommands),
+      createPluginInput({ todos: [{ status: "in_progress" }] }, notificationCommands),
     )
 
     // when
@@ -77,7 +88,7 @@ describe("bundled-opencode-notify idle suppression", () => {
     // given
     const notificationCommands: string[] = []
     const hooks = await bundledNotifyPlugin.server(
-      createPluginInput([{ status: "completed" }], notificationCommands),
+      createPluginInput({ todos: [{ status: "completed" }] }, notificationCommands),
     )
 
     // when
@@ -94,10 +105,12 @@ describe("bundled-opencode-notify idle suppression", () => {
     // given
     const notificationCommands: string[] = []
     const hooks = await bundledNotifyPlugin.server(
-      createPluginInput([
-        { status: "blocked" },
-        { status: "deleted" },
-      ], notificationCommands),
+      createPluginInput({
+        todos: [
+          { status: "blocked" },
+          { status: "deleted" },
+        ],
+      }, notificationCommands),
     )
 
     // when
@@ -108,5 +121,22 @@ describe("bundled-opencode-notify idle suppression", () => {
 
     // then
     expect(notificationCommands.length).toBeGreaterThan(0)
+  })
+
+  test("suppresses ready notification when todo fetch state is unknown", async () => {
+    // given
+    const notificationCommands: string[] = []
+    const hooks = await bundledNotifyPlugin.server(
+      createPluginInput({ throwError: true }, notificationCommands),
+    )
+
+    // when
+    await hooks.event?.({ event: { type: "session.idle", properties: { sessionID: "session-4" } } })
+    jest.advanceTimersByTime(1500)
+    await Promise.resolve()
+    await Promise.resolve()
+
+    // then
+    expect(notificationCommands).toHaveLength(0)
   })
 })

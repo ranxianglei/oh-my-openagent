@@ -22,7 +22,7 @@
     "./schema.json": "./dist/oh-my-opencode.schema.json"
   },
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi --external zod && tsc --emitDeclarationOnly && bun build src/cli/index.ts --outdir dist/cli --target bun --format esm --external @ast-grep/napi && bun build src/bundled-opencode-notify/index.ts --outdir dist/opencode-notify --target bun --format esm --external @ast-grep/napi --external zod && bun run build:bundled-notify && bun run build:schema",
+    "build": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi --external zod && tsc --emitDeclarationOnly && bun build src/cli/index.ts --outdir dist/cli --target bun --format esm --external @ast-grep/napi && bun build src/bundled-opencode-notify/index.ts --outdir dist/opencode-notify --target bun --format esm --external @ast-grep/napi --external zod && bun build src/shared/bundled-notify-ownership.ts --outdir dist/shared --target bun --format esm --external @ast-grep/napi --external zod && bun run build:bundled-notify && bun run build:schema",
     "build:all": "bun run build && bun run build:binaries",
     "build:binaries": "bun run script/build-binaries.ts",
     "build:schema": "bun run script/build-schema.ts",

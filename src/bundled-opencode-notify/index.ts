@@ -1,5 +1,5 @@
 import type { Hooks, Plugin, PluginModule } from "@opencode-ai/plugin"
-import { hasIncompleteTodos } from "../hooks/session-todo-status"
+import { getSessionTodoState } from "../hooks/session-todo-status"
 
 type Platform = "darwin" | "linux" | "win32" | "unsupported"
 
@@ -82,8 +82,8 @@ async function sendSessionNotification(ctx: Parameters<Plugin>[0], title: string
 }
 
 async function sendIdleReadyNotification(ctx: Parameters<Plugin>[0], sessionID: string): Promise<void> {
-  const hasPendingTodos = await hasIncompleteTodos(ctx, sessionID)
-  if (hasPendingTodos) return
+  const todoState = await getSessionTodoState(ctx, sessionID)
+  if (todoState !== "clear") return
   await sendSessionNotification(ctx, "OpenCode", "Agent is ready for input")
 }
 
