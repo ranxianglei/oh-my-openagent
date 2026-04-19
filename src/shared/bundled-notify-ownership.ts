@@ -76,7 +76,7 @@ function isRecognizedExternalNotifyId(entry: string): boolean {
     if (versionSuffix.includes("/")) return false
     if (versionSuffix.includes("\\")) return false
 
-    return /^[a-z0-9.*+!~^<>=| -]+$/i.test(versionSuffix)
+    return /^[a-z0-9_.*+!~^<>=| -]+$/i.test(versionSuffix)
   })
 }
 

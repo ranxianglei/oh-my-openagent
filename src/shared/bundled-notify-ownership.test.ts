@@ -96,6 +96,32 @@ describe("ensureBundledNotifyOwnership", () => {
     expect(readConfig(userConfigPath).plugin).toEqual(["oh-my-openagent", canonicalEntry])
   })
 
+  test("rewrites recognized external notify with underscore dist-tag to bundled owner", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["kdco/notify@release_candidate", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const result = ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(result.changedUserConfig).toBe(true)
+    expect(readConfig(userConfigPath).plugin).toEqual(["oh-my-openagent", canonicalEntry])
+  })
+
+  test("rewrites npm-prefixed recognized notify with underscore dist-tag to bundled owner", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["npm:kdco/notify@release_candidate", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const result = ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(result.changedUserConfig).toBe(true)
+    expect(readConfig(userConfigPath).plugin).toEqual(["oh-my-openagent", canonicalEntry])
+  })
+
   test("rewrites recognized tuple notify in user config when tuple options are empty", () => {
     // given
     const userConfigPath = join(userConfigDir, "opencode.json")
