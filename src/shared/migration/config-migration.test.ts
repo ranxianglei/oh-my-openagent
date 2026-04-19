@@ -168,3 +168,48 @@ describe("migrateConfigFile backup skipping", () => {
     expect(backupFiles.length).toBe(1)
   })
 })
+
+describe("migrateConfigFile session notification cleanup", () => {
+  test("removes legacy notification.force_enable config", () => {
+    // given
+    const workdir = createWorkdir()
+    const configPath = join(workdir, "oh-my-opencode.json")
+    const rawConfig: Record<string, unknown> = {
+      notification: { force_enable: true },
+      disabled_hooks: ["comment-checker"],
+    }
+    writeFileSync(configPath, JSON.stringify(rawConfig, null, 2) + "\n")
+
+    // when
+    const needsWrite = migrateConfigFile(configPath, rawConfig)
+
+    // then
+    expect(needsWrite).toBe(true)
+    expect(rawConfig.notification).toBeUndefined()
+    expect(rawConfig.disabled_hooks).toEqual(["comment-checker"])
+
+    const persistedConfig = JSON.parse(readFileSync(configPath, "utf-8")) as Record<string, unknown>
+    expect(persistedConfig.notification).toBeUndefined()
+    expect(persistedConfig.disabled_hooks).toEqual(["comment-checker"])
+  })
+
+  test("filters removed session-notification hook from disabled_hooks", () => {
+    // given
+    const workdir = createWorkdir()
+    const configPath = join(workdir, "oh-my-opencode.json")
+    const rawConfig: Record<string, unknown> = {
+      disabled_hooks: ["session-notification", "comment-checker"],
+    }
+    writeFileSync(configPath, JSON.stringify(rawConfig, null, 2) + "\n")
+
+    // when
+    const needsWrite = migrateConfigFile(configPath, rawConfig)
+
+    // then
+    expect(needsWrite).toBe(true)
+    expect(rawConfig.disabled_hooks).toEqual(["comment-checker"])
+
+    const persistedConfig = JSON.parse(readFileSync(configPath, "utf-8")) as Record<string, unknown>
+    expect(persistedConfig.disabled_hooks).toEqual(["comment-checker"])
+  })
+})

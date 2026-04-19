@@ -25,7 +25,7 @@ Complete reference for Oh My OpenCode plugin configuration. During the rename tr
   - [Tmux Integration](#tmux-integration)
   - [Git Master](#git-master)
   - [Comment Checker](#comment-checker)
-  - [Notification](#notification)
+  - [Session Alerts Migration](#session-alerts-migration)
   - [MCPs](#mcps)
   - [LSP](#lsp)
 - [Advanced](#advanced)
@@ -509,7 +509,7 @@ Disable built-in hooks via `disabled_hooks`:
 { "disabled_hooks": ["comment-checker"] }
 ```
 
-Available hooks: `todo-continuation-enforcer`, `context-window-monitor`, `session-recovery`, `session-notification`, `comment-checker`, `grep-output-truncator`, `tool-output-truncator`, `directory-agents-injector`, `directory-readme-injector`, `empty-task-response-detector`, `think-mode`, `anthropic-context-window-limit-recovery`, `rules-injector`, `background-notification`, `auto-update-checker`, `startup-toast`, `keyword-detector`, `agent-usage-reminder`, `non-interactive-env`, `interactive-bash-session`, `compaction-context-injector`, `thinking-block-validator`, `claude-code-hooks`, `ralph-loop`, `preemptive-compaction`, `auto-slash-command`, `sisyphus-junior-notepad`, `no-sisyphus-gpt`, `start-work`, `runtime-fallback`
+Available hooks: `todo-continuation-enforcer`, `context-window-monitor`, `session-recovery`, `comment-checker`, `grep-output-truncator`, `tool-output-truncator`, `directory-agents-injector`, `directory-readme-injector`, `empty-task-response-detector`, `think-mode`, `anthropic-context-window-limit-recovery`, `rules-injector`, `background-notification`, `auto-update-checker`, `startup-toast`, `keyword-detector`, `agent-usage-reminder`, `non-interactive-env`, `interactive-bash-session`, `compaction-context-injector`, `thinking-block-validator`, `claude-code-hooks`, `ralph-loop`, `preemptive-compaction`, `auto-slash-command`, `sisyphus-junior-notepad`, `no-sisyphus-gpt`, `start-work`, `runtime-fallback`
 
 **Notes:**
 
@@ -585,15 +585,17 @@ Customize the comment quality checker:
 }
 ```
 
-### Notification
+### Session Alerts Migration
 
-Force-enable session notifications:
+Built-in `session-notification` support was removed from oh-my-opencode.
 
-```json
-{ "notification": { "force_enable": true } }
-```
+- Removed hook key: `session-notification`
+- Removed config key: `notification.force_enable`
+- Migration automatically cleans both from legacy configs at startup
 
-`force_enable` (`false`) - force session-notification even if external notification plugins are detected.
+For session alerts and cmux-related terminal UX, install KDCO `opencode-notify` (`kdco/notify`) in your OpenCode plugin list.
+
+`background-notification` is unchanged because it handles parent-session reminder injection for background tasks, not notification transport.
 
 ### MCPs
 

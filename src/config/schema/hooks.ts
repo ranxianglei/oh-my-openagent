@@ -4,7 +4,6 @@ export const HookNameSchema = z.enum([
   "todo-continuation-enforcer",
   "context-window-monitor",
   "session-recovery",
-  "session-notification",
   "comment-checker",
   "tool-output-truncator",
   "question-label-truncator",

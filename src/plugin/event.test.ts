@@ -173,12 +173,11 @@ afterEach(() => {
 					onSessionDeleted: async () => {},
 				},
 			} as any,
-			hooks: {
-				autoUpdateChecker: { event: async () => {} },
-				claudeCodeHooks: { event: async () => {} },
-				backgroundNotificationHook: { event: async () => {} },
-				sessionNotification: async () => {},
-				todoContinuationEnforcer: { handler: async () => {} },
+				hooks: {
+					autoUpdateChecker: { event: async () => {} },
+					claudeCodeHooks: { event: async () => {} },
+					backgroundNotificationHook: { event: async () => {} },
+					todoContinuationEnforcer: { handler: async () => {} },
 				unstableAgentBabysitter: { event: async () => {} },
 				contextWindowMonitor: { event: async () => {} },
 				directoryAgentsInjector: { event: async () => {} },
@@ -262,16 +261,15 @@ afterEach(() => {
 					onSessionDeleted: async () => {},
 				},
 			} as any,
-			hooks: {
-				autoUpdateChecker: {
-					event: async (input: EventInput) => {
-						dispatchCalls.push(input)
+				hooks: {
+					autoUpdateChecker: {
+						event: async (input: EventInput) => {
+							dispatchCalls.push(input)
+						},
 					},
-				},
-				claudeCodeHooks: { event: async () => {} },
-				backgroundNotificationHook: { event: async () => {} },
-				sessionNotification: async () => {},
-				todoContinuationEnforcer: { handler: async () => {} },
+					claudeCodeHooks: { event: async () => {} },
+					backgroundNotificationHook: { event: async () => {} },
+					todoContinuationEnforcer: { handler: async () => {} },
 				unstableAgentBabysitter: { event: async () => {} },
 				contextWindowMonitor: { event: async () => {} },
 				directoryAgentsInjector: { event: async () => {} },
@@ -318,18 +316,17 @@ afterEach(() => {
 					onSessionDeleted: async () => {},
 				},
 			} as any,
-			hooks: {
-				autoUpdateChecker: {
-					event: async (input: EventInput) => {
-						if (input.event.type === "session.idle") {
-							dispatchCalls.push(input)
-						}
+				hooks: {
+					autoUpdateChecker: {
+						event: async (input: EventInput) => {
+							if (input.event.type === "session.idle") {
+								dispatchCalls.push(input)
+							}
+						},
 					},
-				},
-				claudeCodeHooks: { event: async () => {} },
-				backgroundNotificationHook: { event: async () => {} },
-				sessionNotification: async () => {},
-				todoContinuationEnforcer: { handler: async () => {} },
+					claudeCodeHooks: { event: async () => {} },
+					backgroundNotificationHook: { event: async () => {} },
+					todoContinuationEnforcer: { handler: async () => {} },
 				unstableAgentBabysitter: { event: async () => {} },
 				contextWindowMonitor: { event: async () => {} },
 				directoryAgentsInjector: { event: async () => {} },

@@ -4,7 +4,7 @@
 
 ## OVERVIEW
 
-32 schema files composing `OhMyOpenCodeConfigSchema`. Zod v4 validation with `safeParse()`. All fields optional — omitted fields use plugin defaults.
+28 schema files composing `OhMyOpenCodeConfigSchema`. Zod v4 validation with `safeParse()`. All fields optional — omitted fields use plugin defaults.
 
 ## SCHEMA TREE
 
@@ -12,9 +12,10 @@
 config/schema/
 ├── oh-my-opencode-config.ts    # ROOT: OhMyOpenCodeConfigSchema (composes all below)
 ├── agent-names.ts              # BuiltinAgentNameSchema (11), OverridableAgentNameSchema (14)
-├── agent-overrides.ts          # AgentOverrideConfigSchema (21 fields per agent)
+├── agent-definitions.ts        # AgentDefinitionsConfigSchema (external files)
+├── agent-overrides.ts          # AgentOverrideConfigSchema (22 base fields; hephaestus adds allow_non_gpt_model)
 ├── categories.ts               # 8 built-in + custom categories
-├── hooks.ts                    # HookNameSchema (48 hooks)
+├── hooks.ts                    # HookNameSchema (51 hooks)
 ├── skills.ts                   # SkillsConfigSchema (sources, paths, recursive)
 ├── commands.ts                 # BuiltinCommandNameSchema
 ├── experimental.ts             # Feature flags (plugin_load_timeout_ms min 1000)
@@ -25,9 +26,8 @@ config/schema/
 ├── websearch.ts                # provider: "exa" | "tavily"
 ├── claude-code.ts              # CC compatibility settings
 ├── comment-checker.ts          # AI comment detection config
-├── notification.ts             # OS notification settings
 ├── git-master.ts               # commit_footer: boolean | string
-├── browser-automation.ts       # provider: playwright | agent-browser | playwright-cli
+├── browser-automation.ts       # provider: playwright | agent-browser | dev-browser | playwright-cli
 ├── background-task.ts          # Concurrency limits per model/provider
 ├── fallback-models.ts          # FallbackModelsConfigSchema
 ├── runtime-fallback.ts         # RuntimeFallbackConfigSchema
@@ -41,13 +41,15 @@ config/schema/
 
 ```
 
-## ROOT SCHEMA FIELDS (32)
+## ROOT SCHEMA FIELDS (34)
 
-`$schema`, `new_task_system_enabled`, `default_run_agent`, `disabled_mcps`, `disabled_agents`, `disabled_skills`, `disabled_hooks`, `disabled_commands`, `disabled_tools`, `hashline_edit`, `agents`, `categories`, `claude_code`, `sisyphus_agent`, `comment_checker`, `experimental`, `auto_update`, `skills`, `ralph_loop`, `background_task`, `notification`, `babysitting`, `git_master`, `browser_automation_engine`, `websearch`, `tmux`, `sisyphus`, `start_work`, `_migrations`, `model_fallback`, `model_capabilities`, `openclaw`, `mcp_env_allowlist`
+`$schema`, `new_task_system_enabled`, `default_run_agent`, `agent_definitions`, `disabled_mcps`, `disabled_agents`, `disabled_skills`, `disabled_hooks`, `disabled_commands`, `disabled_tools`, `mcp_env_allowlist`, `hashline_edit`, `model_fallback`, `agents`, `categories`, `claude_code`, `sisyphus_agent`, `comment_checker`, `experimental`, `auto_update`, `skills`, `ralph_loop`, `runtime_fallback`, `background_task`, `model_capabilities`, `openclaw`, `babysitting`, `git_master`, `browser_automation_engine`, `websearch`, `tmux`, `sisyphus`, `start_work`, `_migrations`
 
-## AGENT OVERRIDE FIELDS (21)
+## AGENT OVERRIDE FIELDS (22)
 
-`model`, `variant`, `category`, `skills`, `temperature`, `top_p`, `prompt`, `prompt_append`, `tools`, `disable`, `description`, `mode`, `color`, `permission`, `maxTokens`, `thinking`, `reasoningEffort`, `textVerbosity`, `providerOptions`
+`model`, `fallback_models`, `variant`, `category`, `skills`, `temperature`, `top_p`, `prompt`, `prompt_append`, `tools`, `disable`, `description`, `mode`, `color`, `permission`, `maxTokens`, `thinking`, `reasoningEffort`, `textVerbosity`, `providerOptions`, `ultrawork`, `compaction`
+
+Note: `hephaestus` extends this base schema with `allow_non_gpt_model`.
 
 ## HOW TO ADD CONFIG
 

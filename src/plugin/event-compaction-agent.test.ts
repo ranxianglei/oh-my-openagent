@@ -26,7 +26,6 @@ function createMinimalEventHandler() {
       autoUpdateChecker: { event: async () => {} },
       claudeCodeHooks: { event: async () => {} },
       backgroundNotificationHook: { event: async () => {} },
-      sessionNotification: async () => {},
       todoContinuationEnforcer: { handler: async () => {} },
       unstableAgentBabysitter: { event: async () => {} },
       contextWindowMonitor: { event: async () => {} },

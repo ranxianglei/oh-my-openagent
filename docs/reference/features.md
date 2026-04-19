@@ -789,9 +789,10 @@ Hooks intercept and modify behavior at key points in the agent lifecycle across 
 | ---------------------------- | ------------------- | -------------------------------------------------------------------------------------------------- |
 | **auto-update-checker**      | Event               | Checks for new versions on session creation, shows startup toast with version and Sisyphus status. |
 | **background-notification**  | Event               | Notifies when background agent tasks complete.                                                     |
-| **session-notification**     | Event               | OS notifications when agents go idle. Works on macOS, Linux, Windows.                              |
 | **agent-usage-reminder**     | PostToolUse + Event | Reminds you to leverage specialized agents for better results.                                     |
 | **question-label-truncator** | PreToolUse          | Truncates long question labels in the Question tool UI.                                            |
+
+Session-level OS alerts are now provided by KDCO `opencode-notify` (`kdco/notify`). oh-my-opencode no longer owns built-in `session-notification` transport.
 
 #### Task Management
 

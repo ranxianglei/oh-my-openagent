@@ -29,6 +29,23 @@ After you install it, you can read this [overview guide](./overview.md) to under
 
 The published package and local binary are still `oh-my-opencode`. Inside `opencode.json`, the compatibility layer now prefers the plugin entry `oh-my-openagent`, while legacy `oh-my-opencode` entries still load with a warning. Plugin config loading recognizes both `oh-my-openagent.json[c]` and `oh-my-opencode.json[c]` during the transition. If you see a "Using legacy package name" warning from `bunx oh-my-opencode doctor`, update your `opencode.json` plugin entry from `"oh-my-opencode"` to `"oh-my-openagent"`.
 
+## Session notification migration (KDCO)
+
+oh-my-opencode removed built-in `session-notification` handling.
+
+- Removed hook key: `session-notification`
+- Removed config key: `notification.force_enable`
+
+For session alerts and cmux-related terminal UX, install KDCO `opencode-notify` (`kdco/notify`) in your OpenCode plugin list.
+
+```json
+{
+  "plugin": ["oh-my-openagent", "kdco/notify"]
+}
+```
+
+`background-notification` behavior in oh-my-opencode is unchanged.
+
 ## For LLM Agents
 
 > **IMPORTANT: Use `curl` to fetch this file, NOT WebFetch.** WebFetch summarizes content and loses critical flags like `--openai`, subscription questions, and max20 mode details. Always use:

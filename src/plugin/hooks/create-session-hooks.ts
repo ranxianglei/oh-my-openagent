@@ -6,7 +6,6 @@ import type { PluginContext } from "../types"
 import {
   createContextWindowMonitorHook,
   createSessionRecoveryHook,
-  createSessionNotification,
   createThinkModeHook,
   createModelFallbackHook,
   createAnthropicContextWindowLimitRecoveryHook,
@@ -30,9 +29,6 @@ import {
 } from "../../hooks"
 import { createAnthropicEffortHook } from "../../hooks/anthropic-effort"
 import {
-  detectExternalNotificationPlugin,
-  getNotificationConflictWarning,
-  log,
   normalizeSDKResponse,
 } from "../../shared"
 import { safeCreateHook } from "../../shared/safe-create-hook"
@@ -43,7 +39,6 @@ export type SessionHooks = {
   contextWindowMonitor: ReturnType<typeof createContextWindowMonitorHook> | null
   preemptiveCompaction: ReturnType<typeof createPreemptiveCompactionHook> | null
   sessionRecovery: ReturnType<typeof createSessionRecoveryHook> | null
-  sessionNotification: ReturnType<typeof createSessionNotification> | null
   thinkMode: ReturnType<typeof createThinkModeHook> | null
   modelFallback: ReturnType<typeof createModelFallbackHook> | null
   anthropicContextWindowLimitRecovery: ReturnType<typeof createAnthropicContextWindowLimitRecoveryHook> | null
@@ -94,17 +89,6 @@ export function createSessionHooks(args: {
     ? safeHook("session-recovery", () =>
         createSessionRecoveryHook(ctx, { experimental: pluginConfig.experimental }))
     : null
-
-  let sessionNotification: ReturnType<typeof createSessionNotification> | null = null
-  if (isHookEnabled("session-notification")) {
-    const forceEnable = pluginConfig.notification?.force_enable ?? false
-    const externalNotifier = detectExternalNotificationPlugin(ctx.directory)
-    if (externalNotifier.detected && !forceEnable) {
-      log(getNotificationConflictWarning(externalNotifier.pluginName!))
-    } else {
-      sessionNotification = safeHook("session-notification", () => createSessionNotification(ctx))
-    }
-  }
 
   const thinkMode = isHookEnabled("think-mode")
     ? safeHook("think-mode", () => createThinkModeHook())
@@ -277,7 +261,6 @@ export function createSessionHooks(args: {
     contextWindowMonitor,
     preemptiveCompaction,
     sessionRecovery,
-    sessionNotification,
     thinkMode,
     modelFallback,
     anthropicContextWindowLimitRecovery,

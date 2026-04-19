@@ -1,14 +1,14 @@
-# src/hooks/ — 52 Lifecycle Hooks
+# src/hooks/ — 51 Lifecycle Hooks
 
 **Generated:** 2026-04-18
 
 ## OVERVIEW
 
-52 hooks across dedicated modules and standalone files. Three-tier composition: Core(43) + Continuation(7) + Skill(2). All hooks follow `createXXXHook(deps) → HookFunction` factory pattern.
+51 hooks across dedicated modules and standalone files. Three-tier composition: Core(42) + Continuation(7) + Skill(2). All hooks follow `createXXXHook(deps) → HookFunction` factory pattern.
 
 ## HOOK TIERS
 
-### Tier 1: Session Hooks (24) — `create-session-hooks.ts`
+### Tier 1: Session Hooks (23) — `create-session-hooks.ts`
 ## STRUCTURE
 ```
 hooks/
@@ -18,7 +18,7 @@ hooks/
 ├── anthropic-effort/            # Reasoning effort level adjustment
 ├── auto-slash-command/         # Detects /command patterns
 ├── auto-update-checker/        # Plugin update check
-├── background-notification/    # OS notification
+├── background-notification/    # Background task reminder injection
 ├── category-skill-reminder/    # Reminds of category skills
 ├── claude-code-hooks/          # settings.json compat layer
 ├── comment-checker/            # Prevents AI slop
@@ -67,7 +67,6 @@ hooks/
 | contextWindowMonitor | session.idle | Track context window usage |
 | preemptiveCompaction | session.idle | Trigger compaction before limit |
 | sessionRecovery | session.error | Auto-retry on recoverable errors |
-| sessionNotification | session.idle | OS notifications on completion |
 | thinkMode | chat.params | Model variant switching (extended thinking) |
 | anthropicContextWindowLimitRecovery | session.error | Multi-strategy context recovery (truncation, compaction) |
 | autoUpdateChecker | session.created | Check npm for plugin updates |
@@ -164,7 +163,6 @@ Conditional rules injection from AGENTS.md, config, skill rules. Evaluates condi
 | context-window-monitor.ts | Track context window percentage |
 | preemptive-compaction.ts | Trigger compaction before hard limit |
 | tool-output-truncator.ts | Truncate tool output by token count |
-| session-notification.ts + 4 helpers | OS notification on session completion |
 | empty-task-response-detector.ts | Detect empty/failed task responses |
 | session-todo-status.ts | Todo completion status tracking |
 

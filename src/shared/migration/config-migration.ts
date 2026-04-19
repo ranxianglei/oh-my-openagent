@@ -113,6 +113,12 @@ export function migrateConfigFile(
     }
   }
 
+  if ("notification" in copy) {
+    delete copy.notification
+    needsWrite = true
+    log("Removed obsolete notification config; use KDCO opencode-notify (kdco/notify) for session alerts")
+  }
+
   if (copy.disabled_agents && Array.isArray(copy.disabled_agents)) {
     const migrated: string[] = []
     let changed = false

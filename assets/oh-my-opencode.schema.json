@@ -5720,15 +5720,6 @@
       },
       "additionalProperties": false
     },
-    "notification": {
-      "type": "object",
-      "properties": {
-        "force_enable": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
     "model_capabilities": {
       "type": "object",
       "properties": {
