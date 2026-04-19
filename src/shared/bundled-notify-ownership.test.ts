@@ -137,6 +137,35 @@ describe("ensureBundledNotifyOwnership", () => {
     expect(readConfig(userConfigPath).plugin).toEqual([["npm:@custom/opencode-notify@1.2.3", {}], "oh-my-openagent"])
   })
 
+  test("fails loudly for npm alias string spec targeting custom opencode-notify package", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["alias@npm:@custom/opencode-notify@1.2.3", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual(["alias@npm:@custom/opencode-notify@1.2.3", "oh-my-openagent"])
+  })
+
+  test("fails loudly for npm alias tuple spec targeting custom opencode-notify package", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(
+      userConfigPath,
+      JSON.stringify({ plugin: [["alias@npm:@custom/opencode-notify@1.2.3", {}], "oh-my-openagent"] }, null, 2) + "\n",
+    )
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual([["alias@npm:@custom/opencode-notify@1.2.3", {}], "oh-my-openagent"])
+  })
+
   test("migrates stale bundled dist/opencode-notify file URL to canonical bundled entry", () => {
     // given
     const userConfigPath = join(userConfigDir, "opencode.json")

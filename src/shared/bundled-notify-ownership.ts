@@ -83,12 +83,23 @@ function stripVersionSuffix(entry: string): string {
   return trimmed.slice(0, versionSeparatorIndex)
 }
 
-function isCustomPackageNotifyCandidate(entry: string): boolean {
+function extractPackageIdentifierFromSpec(entry: string): string | null {
   const normalized = stripNpmPrefix(entry.trim().toLowerCase())
-  if (normalized.length === 0) return false
-  if (normalized.includes("://")) return false
+  if (normalized.length === 0) return null
+  if (normalized.includes("://")) return null
 
-  const packageIdentifier = stripVersionSuffix(normalized)
+  const aliasSeparatorIndex = normalized.indexOf("@npm:")
+  const packageSpec = aliasSeparatorIndex >= 0
+    ? normalized.slice(aliasSeparatorIndex + "@npm:".length)
+    : normalized
+
+  if (packageSpec.length === 0) return null
+  return stripVersionSuffix(packageSpec)
+}
+
+function isCustomPackageNotifyCandidate(entry: string): boolean {
+  const packageIdentifier = extractPackageIdentifierFromSpec(entry)
+  if (!packageIdentifier) return false
   if (packageIdentifier === "opencode-notify") return true
   if (/^@[a-z0-9._-]+\/opencode-notify$/i.test(packageIdentifier)) return true
   if (/^[a-z0-9._-]+\/opencode-notify$/i.test(packageIdentifier)) return true
