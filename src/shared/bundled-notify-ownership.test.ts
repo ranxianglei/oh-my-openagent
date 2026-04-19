@@ -83,6 +83,19 @@ describe("ensureBundledNotifyOwnership", () => {
     expect(readConfig(userConfigPath).plugin).toEqual(["oh-my-openagent", canonicalEntry])
   })
 
+  test("rewrites recognized npm-prefixed external notify with version to bundled owner", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["npm:kdco/notify@1.2.3", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const result = ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(result.changedUserConfig).toBe(true)
+    expect(readConfig(userConfigPath).plugin).toEqual(["oh-my-openagent", canonicalEntry])
+  })
+
   test("rewrites recognized tuple notify in user config when tuple options are empty", () => {
     // given
     const userConfigPath = join(userConfigDir, "opencode.json")
@@ -150,6 +163,19 @@ describe("ensureBundledNotifyOwnership", () => {
     expect(readConfig(userConfigPath).plugin).toEqual(["alias@npm:@custom/opencode-notify@1.2.3", "oh-my-openagent"])
   })
 
+  test("fails loudly for npm alias string spec targeting recognized kdco/notify package", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["alias@npm:kdco/notify@1.2.3", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual(["alias@npm:kdco/notify@1.2.3", "oh-my-openagent"])
+  })
+
   test("fails loudly for npm alias tuple spec targeting custom opencode-notify package", () => {
     // given
     const userConfigPath = join(userConfigDir, "opencode.json")
@@ -164,6 +190,93 @@ describe("ensureBundledNotifyOwnership", () => {
     // then
     expect(run).toThrow("Unsafe external notify plugin ownership detected")
     expect(readConfig(userConfigPath).plugin).toEqual([["alias@npm:@custom/opencode-notify@1.2.3", {}], "oh-my-openagent"])
+  })
+
+  test("fails loudly for npm alias tuple spec targeting recognized kdco/notify package", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(
+      userConfigPath,
+      JSON.stringify({ plugin: [["alias@npm:kdco/notify@1.2.3", {}], "oh-my-openagent"] }, null, 2) + "\n",
+    )
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual([["alias@npm:kdco/notify@1.2.3", {}], "oh-my-openagent"])
+  })
+
+  test("fails loudly for non-exact recognized-like spec with nested npm alias in string form", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["kdco/notify@npm:kdco/notify@1.2.3", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual(["kdco/notify@npm:kdco/notify@1.2.3", "oh-my-openagent"])
+  })
+
+  test("fails loudly for non-exact recognized-like spec with nested npm alias in tuple form", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(
+      userConfigPath,
+      JSON.stringify({ plugin: [["kdco/notify@npm:kdco/notify@1.2.3", {}], "oh-my-openagent"] }, null, 2) + "\n",
+    )
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual([["kdco/notify@npm:kdco/notify@1.2.3", {}], "oh-my-openagent"])
+  })
+
+  test("fails loudly for recognized notify package with file source suffix in string form", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["kdco/notify@file:../local", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual(["kdco/notify@file:../local", "oh-my-openagent"])
+  })
+
+  test("fails loudly for recognized notify package with file source suffix in tuple form", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(
+      userConfigPath,
+      JSON.stringify({ plugin: [["kdco/notify@file:../local", {}], "oh-my-openagent"] }, null, 2) + "\n",
+    )
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual([["kdco/notify@file:../local", {}], "oh-my-openagent"])
+  })
+
+  test("fails loudly for npm-prefixed recognized notify package with workspace source suffix", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["npm:kdco/notify@workspace:*", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual(["npm:kdco/notify@workspace:*", "oh-my-openagent"])
   })
 
   test("migrates stale bundled dist/opencode-notify file URL to canonical bundled entry", () => {

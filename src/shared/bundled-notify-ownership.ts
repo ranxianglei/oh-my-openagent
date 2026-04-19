@@ -63,7 +63,30 @@ function isPathLikePluginEntry(entry: string): boolean {
 
 function isRecognizedExternalNotifyId(entry: string): boolean {
   const normalized = entry.trim().toLowerCase()
-  return KNOWN_EXTERNAL_NOTIFY_IDS.some((base) => normalized === base || normalized.startsWith(`${base}@`))
+
+  return KNOWN_EXTERNAL_NOTIFY_IDS.some((base) => {
+    if (normalized === base) return true
+    if (!normalized.startsWith(`${base}@`)) return false
+
+    const versionSuffix = normalized.slice(base.length + 1)
+    if (versionSuffix.length === 0) return false
+    if (versionSuffix.includes("@")) return false
+    if (versionSuffix.includes("://")) return false
+    if (versionSuffix.includes(":")) return false
+    if (versionSuffix.includes("/")) return false
+    if (versionSuffix.includes("\\")) return false
+
+    return /^[a-z0-9.*+!~^<>=| -]+$/i.test(versionSuffix)
+  })
+}
+
+function isRecognizedNotifyIdWithUnsupportedSuffix(entry: string): boolean {
+  const normalized = entry.trim().toLowerCase()
+
+  return KNOWN_EXTERNAL_NOTIFY_IDS.some((base) => {
+    if (!normalized.startsWith(`${base}@`)) return false
+    return !isRecognizedExternalNotifyId(normalized)
+  })
 }
 
 function stripNpmPrefix(entry: string): string {
@@ -95,6 +118,18 @@ function extractPackageIdentifierFromSpec(entry: string): string | null {
 
   if (packageSpec.length === 0) return null
   return stripVersionSuffix(packageSpec)
+}
+
+function isAliasedRecognizedNotifyTarget(entry: string): boolean {
+  const normalized = stripNpmPrefix(entry.trim().toLowerCase())
+  const aliasSeparatorIndex = normalized.indexOf("@npm:")
+  if (aliasSeparatorIndex <= 0) return false
+
+  const aliasedTargetSpec = normalized.slice(aliasSeparatorIndex + "@npm:".length)
+  if (aliasedTargetSpec.length === 0) return false
+
+  const aliasedPackageIdentifier = stripVersionSuffix(stripNpmPrefix(aliasedTargetSpec))
+  return aliasedPackageIdentifier === "kdco/notify"
 }
 
 function isCustomPackageNotifyCandidate(entry: string): boolean {
@@ -173,6 +208,24 @@ function classifyPluginEntry(entry: OpenCodePluginEntry, index: number, canonica
       }
     }
 
+    if (isRecognizedNotifyIdWithUnsupportedSuffix(entry)) {
+      return {
+        kind: "unsafe-external",
+        entry,
+        index,
+        reason: "recognized notify package uses unsupported source/custom suffix",
+      }
+    }
+
+    if (isAliasedRecognizedNotifyTarget(entry)) {
+      return {
+        kind: "unsafe-external",
+        entry,
+        index,
+        reason: "aliased kdco/notify entries are treated as custom notify owners",
+      }
+    }
+
     if (isCustomPackageNotifyCandidate(entry)) {
       return {
         kind: "unsafe-external",
@@ -218,6 +271,24 @@ function classifyPluginEntry(entry: OpenCodePluginEntry, index: number, canonica
       entry,
       index,
       reason: "path-based notify plugin entries are not auto-migrated",
+    }
+  }
+
+  if (isRecognizedNotifyIdWithUnsupportedSuffix(tupleKey)) {
+    return {
+      kind: "unsafe-external",
+      entry,
+      index,
+      reason: "recognized notify package uses unsupported source/custom suffix",
+    }
+  }
+
+  if (isAliasedRecognizedNotifyTarget(tupleKey)) {
+    return {
+      kind: "unsafe-external",
+      entry,
+      index,
+      reason: "aliased kdco/notify entries are treated as custom notify owners",
     }
   }
 
