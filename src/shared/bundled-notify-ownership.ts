@@ -66,6 +66,35 @@ function isRecognizedExternalNotifyId(entry: string): boolean {
   return KNOWN_EXTERNAL_NOTIFY_IDS.some((base) => normalized === base || normalized.startsWith(`${base}@`))
 }
 
+function stripNpmPrefix(entry: string): string {
+  return entry.startsWith("npm:") ? entry.slice("npm:".length) : entry
+}
+
+function stripVersionSuffix(entry: string): string {
+  const trimmed = entry.trim()
+  const versionSeparatorIndex = trimmed.lastIndexOf("@")
+  if (versionSeparatorIndex <= 0) return trimmed
+
+  const slashIndex = trimmed.indexOf("/")
+  if (trimmed.startsWith("@") && versionSeparatorIndex <= slashIndex) {
+    return trimmed
+  }
+
+  return trimmed.slice(0, versionSeparatorIndex)
+}
+
+function isCustomPackageNotifyCandidate(entry: string): boolean {
+  const normalized = stripNpmPrefix(entry.trim().toLowerCase())
+  if (normalized.length === 0) return false
+  if (normalized.includes("://")) return false
+
+  const packageIdentifier = stripVersionSuffix(normalized)
+  if (packageIdentifier === "opencode-notify") return true
+  if (/^@[a-z0-9._-]+\/opencode-notify$/i.test(packageIdentifier)) return true
+  if (/^[a-z0-9._-]+\/opencode-notify$/i.test(packageIdentifier)) return true
+  return false
+}
+
 function normalizePathForComparison(pathValue: string): string {
   return resolve(pathValue).replace(/\\/g, "/").replace(/\/+$/, "")
 }
@@ -133,6 +162,15 @@ function classifyPluginEntry(entry: OpenCodePluginEntry, index: number, canonica
       }
     }
 
+    if (isCustomPackageNotifyCandidate(entry)) {
+      return {
+        kind: "unsafe-external",
+        entry,
+        index,
+        reason: "notify package entry is not an exact recognized kdco/notify identifier",
+      }
+    }
+
     return { kind: "other", entry, index }
   }
 
@@ -169,6 +207,15 @@ function classifyPluginEntry(entry: OpenCodePluginEntry, index: number, canonica
       entry,
       index,
       reason: "path-based notify plugin entries are not auto-migrated",
+    }
+  }
+
+  if (isCustomPackageNotifyCandidate(tupleKey)) {
+    return {
+      kind: "unsafe-external",
+      entry,
+      index,
+      reason: "notify package tuple entry is not an exact recognized kdco/notify identifier",
     }
   }
 

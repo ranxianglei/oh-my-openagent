@@ -111,6 +111,32 @@ describe("ensureBundledNotifyOwnership", () => {
     expect(readConfig(userConfigPath).plugin).toEqual(["team-notify-center", "oh-my-openagent", canonicalEntry])
   })
 
+  test("fails loudly for custom package-based notify plugin id", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: ["@custom/opencode-notify", "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual(["@custom/opencode-notify", "oh-my-openagent"])
+  })
+
+  test("fails loudly for custom tuple-based notify package id", () => {
+    // given
+    const userConfigPath = join(userConfigDir, "opencode.json")
+    writeFileSync(userConfigPath, JSON.stringify({ plugin: [["npm:@custom/opencode-notify@1.2.3", {}], "oh-my-openagent"] }, null, 2) + "\n")
+
+    // when
+    const run = () => ensureBundledNotifyOwnership({ projectDirectory: projectDir, packageRoot })
+
+    // then
+    expect(run).toThrow("Unsafe external notify plugin ownership detected")
+    expect(readConfig(userConfigPath).plugin).toEqual([["npm:@custom/opencode-notify@1.2.3", {}], "oh-my-openagent"])
+  })
+
   test("migrates stale bundled dist/opencode-notify file URL to canonical bundled entry", () => {
     // given
     const userConfigPath = join(userConfigDir, "opencode.json")
