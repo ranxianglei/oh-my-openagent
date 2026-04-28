@@ -1,10 +1,43 @@
+/// <reference types="bun-types" />
+
 import { describe, expect, test, beforeEach, afterEach, spyOn } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
-import { createKeywordDetectorHook } from "./index"
+import { createOpencodeClient } from "@opencode-ai/sdk"
+import { ANALYZE_PATTERN, SEARCH_PATTERN, createKeywordDetectorHook } from "./index"
 import { setMainSession, updateSessionAgent, clearSessionAgent, _resetForTesting } from "../../features/claude-code-session-state"
 import { ContextCollector } from "../../features/context-injector"
 import * as sharedModule from "../../shared"
 import * as sessionState from "../../features/claude-code-session-state"
+
+type ToastOptions = { body: { title: string } }
+
+function createPluginInputForKeywordDetector(showToast: (options: ToastOptions) => Promise<void>): PluginInput {
+  const client = createOpencodeClient({ baseUrl: "http://localhost:4096" })
+  Object.defineProperty(client.tui, "showToast", {
+    value: async (options?: { body?: { title?: string } }) => {
+      await showToast({ body: { title: options?.body?.title ?? "" } })
+      return {
+        data: true,
+        error: undefined,
+        request: new Request("http://localhost:4096/tui/show-toast"),
+        response: new Response(),
+      }
+    },
+  })
+
+  return {
+    client,
+    project: {
+      id: "keyword-detector-test-project",
+      worktree: "/tmp/keyword-detector-test",
+      time: { created: 0 },
+    },
+    directory: "/tmp/keyword-detector-test",
+    worktree: "/tmp/keyword-detector-test",
+    serverUrl: new URL("http://localhost:4096"),
+    $: {} as PluginInput["$"],
+  }
+}
 
 describe("keyword-detector message transform", () => {
   let logCalls: Array<{ msg: string; data?: unknown }>
@@ -26,13 +59,7 @@ describe("keyword-detector message transform", () => {
   })
 
   function createMockPluginInput() {
-    return {
-      client: {
-        tui: {
-          showToast: async () => {},
-        },
-      },
-    } as unknown as PluginInput
+    return createPluginInputForKeywordDetector(async () => {})
   }
 
   test("should prepend ultrawork message to text part", async () => {
@@ -98,6 +125,96 @@ describe("keyword-detector message transform", () => {
   })
 })
 
+describe("keyword-detector tightened search and analyze patterns", () => {
+  test("should NOT match removed English search phrases", () => {
+    // given - conversational English phrases that used to trigger search mode
+    const phrases = ["show me the code", "where is the config", "find a solution", "seek feedback", "track progress", "pinpoint the typo", "hunt the issue"]
+
+    // when - each phrase is checked against the search pattern
+    const results = phrases.map(phrase => SEARCH_PATTERN.test(phrase))
+
+    // then - none should trigger search mode
+    expect(results).toEqual(phrases.map(() => false))
+  })
+
+  test("should NOT match removed Korean search phrases", () => {
+    // given - casual Korean search-adjacent phrases
+    const phrases = ["못 찾아", "보여줘", "어디 있어"]
+
+    // when - each phrase is checked against the search pattern
+    const results = phrases.map(phrase => SEARCH_PATTERN.test(phrase))
+
+    // then - none should trigger search mode
+    expect(results).toEqual(phrases.map(() => false))
+  })
+
+  test("should NOT match removed Japanese Chinese and Vietnamese search phrases", () => {
+    // given - casual where/show phrases across non-English languages
+    const phrases = ["どこにある", "在哪里", "ở đâu"]
+
+    // when - each phrase is checked against the search pattern
+    const results = phrases.map(phrase => SEARCH_PATTERN.test(phrase))
+
+    // then - none should trigger search mode
+    expect(results).toEqual(phrases.map(() => false))
+  })
+
+  test("should still match kept search phrases", () => {
+    // given - explicit search intent phrases across languages
+    const phrases = ["search the codebase", "locate the hook", "grep for callers", "검색 해줘", "찾아봐", "検索して", "查找", "tìm kiếm"]
+
+    // when - each phrase is checked against the search pattern
+    const results = phrases.map(phrase => SEARCH_PATTERN.test(phrase))
+
+    // then - all should still trigger search mode
+    expect(results).toEqual(phrases.map(() => true))
+  })
+
+  test("should NOT match removed English analyze phrases", () => {
+    // given - conversational English analysis-adjacent phrases
+    const phrases = ["how to do this", "why is this failing", "how does it work", "I do not understand"]
+
+    // when - each phrase is checked against the analyze pattern
+    const results = phrases.map(phrase => ANALYZE_PATTERN.test(phrase))
+
+    // then - none should trigger analyze mode
+    expect(results).toEqual(phrases.map(() => false))
+  })
+
+  test("should NOT match removed Korean analyze phrases", () => {
+    // given - daily Korean troubleshooting phrases
+    const phrases = ["왜 안돼", "어떻게 해", "이해가 안돼", "설명해줘", "원인이 뭐야", "이유가 뭐야"]
+
+    // when - each phrase is checked against the analyze pattern
+    const results = phrases.map(phrase => ANALYZE_PATTERN.test(phrase))
+
+    // then - none should trigger analyze mode
+    expect(results).toEqual(phrases.map(() => false))
+  })
+
+  test("should NOT match removed Japanese Chinese and Vietnamese analyze phrases", () => {
+    // given - casual why/how phrases across non-English languages
+    const phrases = ["なぜ失敗する", "どう使う", "为什么失败", "tại sao lỗi"]
+
+    // when - each phrase is checked against the analyze pattern
+    const results = phrases.map(phrase => ANALYZE_PATTERN.test(phrase))
+
+    // then - none should trigger analyze mode
+    expect(results).toEqual(phrases.map(() => false))
+  })
+
+  test("should still match kept analyze phrases", () => {
+    // given - explicit analysis intent phrases across languages
+    const phrases = ["analyze the architecture", "deep-dive into hooks", "diagnose the failure", "분석 해줘", "디버그", "分析", "原理", "phân tích"]
+
+    // when - each phrase is checked against the analyze pattern
+    const results = phrases.map(phrase => ANALYZE_PATTERN.test(phrase))
+
+    // then - all should still trigger analyze mode
+    expect(results).toEqual(phrases.map(() => true))
+  })
+})
+
 describe("keyword-detector session filtering", () => {
   let logCalls: Array<{ msg: string; data?: unknown }>
   let logSpy: ReturnType<typeof spyOn>
@@ -117,15 +234,9 @@ describe("keyword-detector session filtering", () => {
 
   function createMockPluginInput(options: { toastCalls?: string[] } = {}) {
     const toastCalls = options.toastCalls ?? []
-    return {
-      client: {
-        tui: {
-          showToast: async (opts: { body: { title: string } }) => {
-            toastCalls.push(opts.body.title)
-          },
-        },
-      },
-    } as unknown as PluginInput
+    return createPluginInputForKeywordDetector(async options => {
+      toastCalls.push(options.body.title)
+    })
   }
 
   test("should skip non-ultrawork keywords in non-main session (using mainSessionID check)", async () => {
@@ -262,15 +373,9 @@ describe("keyword-detector word boundary", () => {
 
   function createMockPluginInput(options: { toastCalls?: string[] } = {}) {
     const toastCalls = options.toastCalls ?? []
-    return {
-      client: {
-        tui: {
-          showToast: async (opts: { body: { title: string } }) => {
-            toastCalls.push(opts.body.title)
-          },
-        },
-      },
-    } as unknown as PluginInput
+    return createPluginInputForKeywordDetector(async options => {
+      toastCalls.push(options.body.title)
+    })
   }
 
   test("should NOT trigger ultrawork on partial matches like 'StatefulWidget' containing 'ulw'", async () => {
@@ -358,13 +463,7 @@ describe("keyword-detector system-reminder filtering", () => {
   })
 
   function createMockPluginInput() {
-    return {
-      client: {
-        tui: {
-          showToast: async () => {},
-        },
-      },
-    } as unknown as PluginInput
+    return createPluginInputForKeywordDetector(async () => {})
   }
 
   test("should NOT trigger search mode from keywords inside <system-reminder> tags", async () => {
@@ -549,13 +648,7 @@ describe("keyword-detector agent-specific ultrawork messages", () => {
   })
 
   function createMockPluginInput() {
-    return {
-      client: {
-        tui: {
-          showToast: async () => {},
-        },
-      },
-    } as unknown as PluginInput
+    return createPluginInputForKeywordDetector(async () => {})
   }
 
   test("should skip ultrawork injection when agent is prometheus", async () => {
@@ -766,13 +859,7 @@ describe("keyword-detector non-OMO agent skipping", () => {
   })
 
   function createMockPluginInput() {
-    return {
-      client: {
-        tui: {
-          showToast: async () => {},
-        },
-      },
-    } as unknown as PluginInput
+    return createPluginInputForKeywordDetector(async () => {})
   }
 
   test("should skip all keyword injection for OpenCode-Builder agent", async () => {
