@@ -11,8 +11,8 @@
 | Keyword | Pattern | Effect |
 |---------|---------|--------|
 | `ultrawork` / `ulw` | `/\b(ultrawork|ulw)\b/i` | Full orchestration mode — parallel agents, deep exploration, relentless execution |
-| Search mode | `SEARCH_PATTERN` (from `search/`) | Web/doc search focus prompt injection |
-| Analyze mode | `ANALYZE_PATTERN` (from `analyze/`) | Deep analysis mode prompt injection |
+| Search mode | `SEARCH_PATTERN` (from `search/`) | Explicit search prompt injection; excludes casual phrases like `show me`, `where is`, standalone `find`, and multilingual where/show variants |
+| Analyze mode | `ANALYZE_PATTERN` (from `analyze/`) | Explicit analysis prompt injection; excludes conversational how/why/explain/understand phrases across supported languages |
 
 ## STRUCTURE
 
@@ -29,12 +29,10 @@ keyword-detector/
 │   └── isPlannerAgent.ts
 ├── search/
 │   ├── index.ts
-│   ├── pattern.ts     # SEARCH_PATTERN regex
-│   └── message.ts     # SEARCH_MESSAGE
+│   └── default.ts     # SEARCH_PATTERN regex + SEARCH_MESSAGE
 └── analyze/
     ├── index.ts
-    ├── pattern.ts     # ANALYZE_PATTERN regex
-    └── message.ts     # ANALYZE_MESSAGE
+    └── default.ts     # ANALYZE_PATTERN regex + ANALYZE_MESSAGE
 ```
 
 ## DETECTION LOGIC
