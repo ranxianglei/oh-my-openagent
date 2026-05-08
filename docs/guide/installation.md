@@ -248,7 +248,7 @@ If Z.ai is your main provider, the most important fallbacks are:
 
 #### OpenCode Zen
 
-OpenCode Zen provides access to `opencode/` prefixed models including `opencode/claude-opus-4-7`, `opencode/gpt-5.5`, `opencode/gpt-5.3-codex`, `opencode/gpt-5-nano`, `opencode/glm-5`, `opencode/big-pickle`, `opencode/minimax-m2.7`, and `opencode/minimax-m2.7-highspeed`.
+OpenCode Zen provides access to `opencode/` prefixed models including `opencode/claude-opus-4-7`, `opencode/gpt-5.2`, `opencode/gpt-5.5`, `opencode/gpt-5.3-codex`, `opencode/gpt-5.4-mini-fast`, `opencode/gpt-5-nano`, `opencode/glm-5`, `opencode/big-pickle`, `opencode/minimax-m2.7`, and `opencode/minimax-m2.7-highspeed`.
 
 When OpenCode Zen is the best available provider, these are the most relevant source-backed examples:
 
@@ -302,9 +302,10 @@ Not all models behave the same way. Understanding which models are "similar" hel
 
 | Model             | Provider(s)                      | Notes                                             |
 | ----------------- | -------------------------------- | ------------------------------------------------- |
-| **GPT-5.3-codex** | openai, github-copilot, opencode | Deep coding powerhouse. Still available for deep category and explicit overrides. |
-| **GPT-5.5**       | openai, github-copilot, opencode | High intelligence. Default for Oracle, Hephaestus, and deep GPT-native fallbacks. |
-| **GPT-5.4 Mini**  | openai, github-copilot, opencode | Fast + strong reasoning. Default for quick category.     |
+| **GPT-5.2**       | openai, github-copilot, opencode | Plan-review reasoning. Default for Momus at xhigh effort. |
+| **GPT-5.3-codex** | openai, opencode                | Deep coding powerhouse. Default for the deep category at high effort. |
+| **GPT-5.5**       | openai, github-copilot, opencode | High intelligence. Default for Oracle, Hephaestus, unspecified-high, and unspecified-low. |
+| **GPT-5.4 Mini Fast** | openai, github-copilot, opencode | Fast + strong reasoning. Default for quick category with none reasoning effort. |
 | **GPT-5-Nano**    | opencode                         | Ultra-cheap, fast. Good for simple utility tasks. |
 
 **Different-Behavior Models**:
@@ -354,7 +355,7 @@ Priority: **Claude > GPT > Claude-like models**
 | -------------- | ---------------------- | -------------------------------------- | ------------------------------------------------------ |
 | **Hephaestus** | Deep autonomous worker | GPT-5.5 (medium) only                  | "Codex on steroids." No fallback. Requires GPT access. |
 | **Oracle**     | Architecture/debugging | openai\|github-copilot\|opencode/gpt-5.5 (high) → google\|github-copilot\|opencode/gemini-3.1-pro (high) → anthropic\|github-copilot\|opencode/claude-opus-4-7 (max) → opencode-go/glm-5.1 | High-IQ strategic backup. GPT preferred.               |
-| **Momus**      | High-accuracy reviewer | openai\|github-copilot\|opencode/gpt-5.5 (xhigh) → anthropic\|github-copilot\|opencode/claude-opus-4-7 (max) → google\|github-copilot\|opencode/gemini-3.1-pro (high) → opencode-go/glm-5.1 | Verification agent. GPT preferred.                     |
+| **Momus**      | High-accuracy reviewer | openai\|github-copilot\|opencode/gpt-5.2 (xhigh) → anthropic\|github-copilot\|opencode/claude-opus-4-7 (max) → google\|github-copilot\|opencode/gemini-3.1-pro (high) → opencode-go/glm-5.1 | Verification agent. GPT preferred.                     |
 
 **Utility Agents** (speed over intelligence):
 

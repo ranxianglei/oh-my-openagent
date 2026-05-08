@@ -195,19 +195,19 @@ You can override specific agents or categories in your config:
     "ultrabrain": { "model": "openai/gpt-5.5", "variant": "xhigh" },
 
     // Autonomous research and execution
-    "deep": { "model": "openai/gpt-5.5", "variant": "medium" },
+    "deep": { "model": "openai/gpt-5.3-codex", "variant": "high" },
 
     // Creative and design work
     "artistry": { "model": "google/gemini-3.1-pro", "variant": "high" },
 
     // Quick tasks: fast and cheap
-    "quick": { "model": "openai/gpt-5.4-mini" },
+    "quick": { "model": "openai/gpt-5.4-mini-fast", "variant": "none" },
 
     // Low-effort fallback: cheapest available
-    "unspecified-low": { "model": "openai/gpt-5.4-mini" },
+    "unspecified-low": { "model": "openai/gpt-5.5", "variant": "medium" },
 
     // High-effort fallback: best available
-    "unspecified-high": { "model": "anthropic/claude-opus-4-7", "variant": "max" },
+    "unspecified-high": { "model": "openai/gpt-5.5", "variant": "high" },
 
     // Prose and documentation
     "writing": { "model": "anthropic/claude-opus-4-7", "variant": "high" },

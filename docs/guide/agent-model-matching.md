@@ -120,7 +120,7 @@ You don't need every provider. You need the right two.
 | Subscription | Cost | What You Get | Covers |
 |---|---|---|---|
 | **OpenCode Go** | $10/mo | `kimi-k2.5`, `kimi-k2.6`, `glm-5`, `glm-5.1`, `minimax-m2.5`, `minimax-m2.7`, `mimo-v2-pro`, `qwen3.5-plus`, `qwen3.6-plus` | Claude-family alternatives (Kimi, GLM), Gemini-family alternatives (Qwen), utility/retrieval (MiniMax) |
-| **OpenAI Plus/Pro** | $20+/mo | `gpt-5.4`, `gpt-5.4-pro`, `gpt-5.5`, `gpt-5.3-codex` | GPT-native agents (Hephaestus, Oracle, Momus), dual-prompt agents' GPT path |
+| **OpenAI Plus/Pro** | $20+/mo | `gpt-5.2`, `gpt-5.4-mini-fast`, `gpt-5.4`, `gpt-5.4-pro`, `gpt-5.5`, `gpt-5.3-codex` | GPT-native agents (Hephaestus, Oracle, Momus), category defaults, dual-prompt agents' GPT path |
 
 ### Why this specific combination
 
@@ -224,7 +224,7 @@ These agents are built for GPT's principle-driven style. Their prompts assume au
 |---|---|---|
 | **Hephaestus** | Autonomous deep worker | `openai\|github-copilot\|venice\|opencode\|vercel/gpt-5.5` (medium) — single-entry chain, requires one of those providers. The craftsman. |
 | **Oracle** | Architecture consultant | `openai\|github-copilot\|opencode\|vercel/gpt-5.5` (high) → `google\|github-copilot\|opencode\|vercel/gemini-3.1-pro` (high) → `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7` (max) → `opencode-go\|vercel/glm-5.1` |
-| **Momus** | Ruthless reviewer | `openai\|github-copilot\|opencode\|vercel/gpt-5.5` (xhigh) → `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7` (max) → `google\|github-copilot\|opencode\|vercel/gemini-3.1-pro` (high) → `opencode-go\|vercel/glm-5.1` |
+| **Momus** | Ruthless reviewer | `openai\|github-copilot\|opencode\|vercel/gpt-5.2` (xhigh) → `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7` (max) → `google\|github-copilot\|opencode\|vercel/gemini-3.1-pro` (high) → `opencode-go\|vercel/glm-5.1` |
 
 ### Utility Runners → Speed over Intelligence
 
@@ -312,10 +312,10 @@ When agents delegate work, they don't pick a model name — they pick a **catego
 | `visual-engineering` | Frontend, UI, CSS, design | `google/gemini-3.1-pro` (high) | Gemini → `zai-coding-plan/glm-5` → `claude-opus-4-7` (max) → `opencode-go/glm-5.1` → `kimi-for-coding/k2p5` |
 | `artistry` | Creative, novel approaches | `google/gemini-3.1-pro` (high) | Gemini → `claude-opus-4-7` (max) → `gpt-5.5` — requires Gemini family to activate |
 | `ultrabrain` | Maximum reasoning needed | `openai/gpt-5.5` (xhigh) | GPT-5.5 xhigh → `gemini-3.1-pro` (high) → `claude-opus-4-7` (max) → `opencode-go/glm-5.1` |
-| `deep` | Deep coding, complex logic | `openai/gpt-5.5` (medium) | GPT-5.5 → `claude-opus-4-7` (max) → `gemini-3.1-pro` (high) |
-| `quick` | Simple, fast tasks | `openai/gpt-5.4-mini` | GPT-5.4-mini → `claude-haiku-4-5` → `gemini-3-flash` → `opencode-go/minimax-m2.7` → `opencode/gpt-5-nano` |
-| `unspecified-high` | General complex work | `anthropic/claude-opus-4-7` (max) | Opus → `gpt-5.5` (high) → `zai-coding-plan/glm-5` → `kimi-for-coding/k2p5` → `opencode-go/glm-5.1` → `opencode/kimi-k2.5` → `moonshotai/kimi-k2.5` |
-| `unspecified-low` | General standard work | `anthropic/claude-sonnet-4-6` | Sonnet → `gpt-5.3-codex` (medium) → `opencode-go/kimi-k2.6` → `google/gemini-3-flash` → `opencode-go/minimax-m2.7` |
+| `deep` | Deep coding, complex logic | `openai/gpt-5.3-codex` (high) | GPT-5.3-Codex → `claude-opus-4-7` (max) → `gemini-3.1-pro` (high) |
+| `quick` | Simple, fast tasks | `openai/gpt-5.4-mini-fast` (none) | GPT-5.4 Mini Fast → `claude-haiku-4-5` → `gemini-3-flash` → `opencode-go/minimax-m2.7` → `opencode/gpt-5-nano` |
+| `unspecified-high` | General complex work | `openai/gpt-5.5` (high) | GPT-5.5 high → `claude-opus-4-7` (max) → `zai-coding-plan/glm-5` → `kimi-for-coding/k2p5` → `opencode-go/glm-5.1` → `opencode/kimi-k2.5` → `moonshotai/kimi-k2.5` |
+| `unspecified-low` | General standard work | `openai/gpt-5.5` (medium) | GPT-5.5 medium → `gpt-5.3-codex` (medium) → `claude-sonnet-4-6` → `opencode-go/kimi-k2.6` → `google/gemini-3-flash` → `opencode-go/minimax-m2.7` |
 | `writing` | Text, docs, prose | `kimi-for-coding/k2p5` | Kimi → `gemini-3-flash` → `opencode-go/kimi-k2.6` → `claude-sonnet-4-6` → `opencode-go/minimax-m2.7` |
 
 See the [Orchestration System Guide](./orchestration.md) for how agents dispatch tasks to categories.
@@ -360,11 +360,11 @@ See the [Orchestration System Guide](./orchestration.md) for how agents dispatch
 
   "categories": {
     "visual-engineering": { "model": "opencode-go/qwen3.6-plus" },  // Qwen as Gemini alt
-    "deep": { "model": "openai/gpt-5.5", "variant": "medium" },
+    "deep": { "model": "openai/gpt-5.3-codex", "variant": "high" },
     "ultrabrain": { "model": "openai/gpt-5.5", "variant": "xhigh" },
-    "quick": { "model": "openai/gpt-5.4-mini" },
-    "unspecified-low": { "model": "opencode-go/kimi-k2.6" },
-    "unspecified-high": { "model": "opencode-go/kimi-k2.6" },
+    "quick": { "model": "openai/gpt-5.4-mini-fast", "variant": "none" },
+    "unspecified-low": { "model": "openai/gpt-5.5", "variant": "medium" },
+    "unspecified-high": { "model": "openai/gpt-5.5", "variant": "high" },
     "writing": { "model": "opencode-go/kimi-k2.6" },
   },
 
@@ -393,8 +393,8 @@ Highest quality, highest cost. No surprises.
   },
   "categories": {
     "visual-engineering": { "model": "google/gemini-3.1-pro", "variant": "high" },
-    "deep": { "model": "openai/gpt-5.5", "variant": "medium" },
-    "unspecified-high": { "model": "anthropic/claude-opus-4-7", "variant": "max" },
+    "deep": { "model": "openai/gpt-5.3-codex", "variant": "high" },
+    "unspecified-high": { "model": "openai/gpt-5.5", "variant": "high" },
   },
 }
 ```

@@ -34,6 +34,7 @@ const TEST_AVAILABLE_MODELS = new Set([
   "google/gemini-3.1-pro",
   "google/gemini-3-flash",
   "openai/gpt-5.4-mini",
+  "openai/gpt-5.4-mini-fast",
   "openai/gpt-5.5",
   "openai/gpt-5.3-codex",
 ])
@@ -69,7 +70,7 @@ describe("sisyphus-task", () => {
       models: {
         anthropic: ["claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5"],
         google: ["gemini-3.1-pro", "gemini-3-flash"],
-        openai: ["gpt-5.5", "gpt-5.4-mini", "gpt-5.3-codex"],
+        openai: ["gpt-5.5", "gpt-5.4-mini", "gpt-5.4-mini-fast", "gpt-5.3-codex"],
       },
       connected: ["anthropic", "google", "openai"],
       updatedAt: "2026-01-01T00:00:00.000Z",
@@ -109,18 +110,18 @@ describe("sisyphus-task", () => {
 
       // when / #then
       expect(category).toBeDefined()
-      expect(category.model).toBe("openai/gpt-5.5")
-      expect(category.variant).toBe("medium")
+      expect(category.model).toBe("openai/gpt-5.3-codex")
+      expect(category.variant).toBe("high")
     })
 
-    test("unspecified-high category uses claude-opus-4-7 max as primary", () => {
+    test("unspecified-high category uses gpt-5.5 high as primary", () => {
       // given
       const category = DEFAULT_CATEGORIES["unspecified-high"]
 
       // when / #then
       expect(category).toBeDefined()
-      expect(category.model).toBe("anthropic/claude-opus-4-7")
-      expect(category.variant).toBe("max")
+      expect(category.model).toBe("openai/gpt-5.5")
+      expect(category.variant).toBe("high")
     })
   })
 
@@ -680,7 +681,7 @@ describe("sisyphus-task", () => {
       //#given - manager.launch returns before sessionID is available
       const { createDelegateTask } = require("./tools")
 
-      const tasks = new Map<string, { id: string; sessionID?: string; status: string; description: string; agent: string }>()
+      const tasks = new Map<string, { id: string; sessionId?: string; status: string; description: string; agent: string }>()
       const mockManager = {
         getTask: (id: string) => tasks.get(id),
         launch: async () => {
@@ -1081,7 +1082,7 @@ describe("sisyphus-task", () => {
         abort: new AbortController().signal,
       }
 
-      // when - unspecified-high uses claude-opus-4-7 max in DEFAULT_CATEGORIES
+      // when - unspecified-high uses gpt-5.5 high in DEFAULT_CATEGORIES
       await tool.execute(
         {
           description: "Test unspecified-high default variant",
@@ -1093,11 +1094,11 @@ describe("sisyphus-task", () => {
         toolContext
       )
 
-      // then - claude-opus-4-7 should be passed with max variant
+      // then - gpt-5.5 should be passed with high variant
       expect(launchInput.model).toEqual({
-        providerID: "anthropic",
-        modelID: "claude-opus-4-7",
-        variant: "max",
+        providerID: "openai",
+        modelID: "gpt-5.5",
+        variant: "high",
       })
     }, { timeout: 20000 })
 
@@ -1142,7 +1143,7 @@ describe("sisyphus-task", () => {
         abort: new AbortController().signal,
       }
 
-      // when - unspecified-high uses claude-opus-4-7 max in DEFAULT_CATEGORIES
+      // when - unspecified-high uses gpt-5.5 high in DEFAULT_CATEGORIES
       await tool.execute(
         {
           description: "Test unspecified-high sync variant",
@@ -1154,12 +1155,12 @@ describe("sisyphus-task", () => {
         toolContext
       )
 
-      // then - claude-opus-4-7 should be passed with max variant
+      // then - gpt-5.5 should be passed with high variant
       expect(promptBody.model).toEqual({
-        providerID: "anthropic",
-        modelID: "claude-opus-4-7",
+        providerID: "openai",
+        modelID: "gpt-5.5",
       })
-      expect(promptBody.variant).toBe("max")
+      expect(promptBody.variant).toBe("high")
     }, { timeout: 20000 })
   })
 
@@ -2761,10 +2762,11 @@ describe("sisyphus-task", () => {
         toolContext
       )
 
-      // then - model should be openai/gpt-5.4-mini from DEFAULT_CATEGORIES
+      // then - model should be openai/gpt-5.4-mini-fast from DEFAULT_CATEGORIES
       //         NOT anthropic/claude-sonnet-4-6 (system default)
       expect(launchInput.model.providerID).toBe("openai")
-      expect(launchInput.model.modelID).toBe("gpt-5.4-mini")
+      expect(launchInput.model.modelID).toBe("gpt-5.4-mini-fast")
+      expect(launchInput.model.variant).toBe("none")
     })
 
     test("category delegation ignores UI-selected (Kimi) system default model", async () => {
@@ -2828,7 +2830,8 @@ describe("sisyphus-task", () => {
 
       // then - category model must win (not Kimi)
       expect(launchInput.model.providerID).toBe("openai")
-      expect(launchInput.model.modelID).toBe("gpt-5.4-mini")
+      expect(launchInput.model.modelID).toBe("gpt-5.4-mini-fast")
+      expect(launchInput.model.variant).toBe("none")
     })
 
     test("sisyphus-junior model override takes precedence over category model", async () => {
@@ -3450,6 +3453,25 @@ describe("sisyphus-task", () => {
       expect(resolved!.config.variant).toBe("xhigh")
     })
 
+    test("requested built-in category model defaults stay aligned", () => {
+      // given - categories with explicit runtime defaults
+      const expectedDefaults = {
+        deep: { model: "openai/gpt-5.3-codex", variant: "high" },
+        quick: { model: "openai/gpt-5.4-mini-fast", variant: "none" },
+        "unspecified-low": { model: "openai/gpt-5.5", variant: "medium" },
+        "unspecified-high": { model: "openai/gpt-5.5", variant: "high" },
+      } satisfies Record<string, { model: string; variant: string }>
+
+      for (const [categoryName, expected] of Object.entries(expectedDefaults)) {
+        // when
+        const resolved = resolveCategoryConfig(categoryName, { systemDefaultModel: SYSTEM_DEFAULT_MODEL })
+
+        // then
+        expect(resolved?.config.model).toBe(expected.model)
+        expect(resolved?.config.variant).toBe(expected.variant)
+      }
+    })
+
     test("default model is used for category with default entry", () => {
       // given - unspecified-low has default model
       const categoryName = "unspecified-low"
@@ -3459,7 +3481,8 @@ describe("sisyphus-task", () => {
       
       // then - default model from DEFAULT_CATEGORIES is used
       expect(resolved).not.toBeNull()
-      expect(resolved!.config.model).toBe("anthropic/claude-sonnet-4-6")
+      expect(resolved!.config.model).toBe("openai/gpt-5.5")
+      expect(resolved!.config.variant).toBe("medium")
     })
 
     test("category built-in model takes precedence over inheritedModel for builtin category", () => {

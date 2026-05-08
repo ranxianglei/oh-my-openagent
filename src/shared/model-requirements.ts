@@ -142,7 +142,7 @@ export const AGENT_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
     fallbackChain: [
       {
         providers: ["openai", "github-copilot", "opencode", "vercel"],
-        model: "gpt-5.5",
+        model: "gpt-5.2",
         variant: "xhigh",
       },
       {
@@ -226,9 +226,9 @@ export const CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
   deep: {
     fallbackChain: [
       {
-        providers: ["openai", "github-copilot", "venice", "opencode", "vercel"],
-        model: "gpt-5.5",
-        variant: "medium",
+        providers: ["openai", "venice", "opencode", "vercel"],
+        model: "gpt-5.3-codex",
+        variant: "high",
       },
       {
         providers: ["anthropic", "github-copilot", "opencode", "vercel"],
@@ -261,7 +261,8 @@ export const CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
     fallbackChain: [
       {
         providers: ["openai", "github-copilot", "opencode", "vercel"],
-        model: "gpt-5.4-mini",
+        model: "gpt-5.4-mini-fast",
+        variant: "none",
       },
       {
         providers: ["anthropic", "github-copilot", "opencode", "vercel"],
@@ -278,13 +279,18 @@ export const CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
   "unspecified-low": {
     fallbackChain: [
       {
-        providers: ["anthropic", "github-copilot", "opencode", "vercel"],
-        model: "claude-sonnet-4-6",
+        providers: ["openai", "github-copilot", "opencode", "vercel"],
+        model: "gpt-5.5",
+        variant: "medium",
       },
       {
         providers: ["openai", "opencode", "vercel"],
         model: "gpt-5.3-codex",
         variant: "medium",
+      },
+      {
+        providers: ["anthropic", "github-copilot", "opencode", "vercel"],
+        model: "claude-sonnet-4-6",
       },
       { providers: ["opencode-go", "vercel"], model: "kimi-k2.6" },
       {
@@ -297,14 +303,14 @@ export const CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
   "unspecified-high": {
     fallbackChain: [
       {
-        providers: ["anthropic", "github-copilot", "opencode", "vercel"],
-        model: "claude-opus-4-7",
-        variant: "max",
-      },
-      {
         providers: ["openai", "github-copilot", "opencode", "vercel"],
         model: "gpt-5.5",
         variant: "high",
+      },
+      {
+        providers: ["anthropic", "github-copilot", "opencode", "vercel"],
+        model: "claude-opus-4-7",
+        variant: "max",
       },
       { providers: ["zai-coding-plan", "opencode", "vercel"], model: "glm-5" },
       { providers: ["kimi-for-coding"], model: "k2p5" },

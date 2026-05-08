@@ -52,19 +52,19 @@
 
   "categories": {
     // Trivial changes: fastest possible
-    "quick": { "model": "opencode/gpt-5-nano" },
+    "quick": { "model": "openai/gpt-5.4-mini-fast", "variant": "none" },
 
     // Standard coding tasks: good quality, fast
-    "unspecified-low": { "model": "anthropic/claude-sonnet-4-6" },
+    "unspecified-low": { "model": "openai/gpt-5.5", "variant": "medium" },
 
     // Complex refactors: best quality
-    "unspecified-high": { "model": "openai/gpt-5.3-codex" },
+    "unspecified-high": { "model": "openai/gpt-5.5", "variant": "high" },
 
     // Visual work
     "visual-engineering": { "model": "google/gemini-3.1-pro", "variant": "high" },
 
     // Deep autonomous work
-    "deep": { "model": "openai/gpt-5.5" },
+    "deep": { "model": "openai/gpt-5.3-codex", "variant": "high" },
 
     // Architecture decisions
     "ultrabrain": { "model": "openai/gpt-5.5", "variant": "xhigh" },

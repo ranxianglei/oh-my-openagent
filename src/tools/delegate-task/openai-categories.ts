@@ -158,7 +158,7 @@ Approach:
 </Category_Context>
 
 <Caller_Warning>
-THIS CATEGORY USES A SMALLER/FASTER MODEL (gpt-5.4-mini).
+THIS CATEGORY USES A SMALLER/FASTER MODEL (gpt-5.4-mini-fast with none reasoning effort).
 
 The model executing this task is optimized for speed over depth. Your prompt MUST be:
 
@@ -202,14 +202,14 @@ export const OPENAI_CATEGORIES: BuiltinCategoryDefinition[] = [
   },
   {
     name: "deep",
-    config: { model: "openai/gpt-5.5", variant: "medium" },
+    config: { model: "openai/gpt-5.3-codex", variant: "high" },
     description: "Goal-oriented autonomous problem-solving on hairy problems requiring deep research. ONE goal + ONE deliverable per call — multiple goals must fan out as parallel `deep` calls, never bundled into one.",
     promptAppend: DEEP_CATEGORY_PROMPT_APPEND,
     resolvePromptAppend: resolveDeepCategoryPromptAppend,
   },
   {
     name: "quick",
-    config: { model: "openai/gpt-5.4-mini" },
+    config: { model: "openai/gpt-5.4-mini-fast", variant: "none" },
     description: "Trivial tasks - single file changes, typo fixes, simple modifications",
     promptAppend: QUICK_CATEGORY_PROMPT_APPEND,
   },

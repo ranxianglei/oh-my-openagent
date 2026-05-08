@@ -37,7 +37,7 @@ flowchart TB
         User[(" User")]
         Prometheus[" Prometheus<br/>(Planner)<br/>claude-opus-4-7 / gpt-5.5 / glm-5"]
         Metis[" Metis<br/>(Consultant)<br/>claude-opus-4-7 / gpt-5.5 / glm-5"]
-        Momus[" Momus<br/>(Reviewer)<br/>gpt-5.5 / claude-opus-4-7 / gemini-3.1-pro / glm-5"]
+        Momus[" Momus<br/>(Reviewer)<br/>gpt-5.2 / claude-opus-4-7 / gemini-3.1-pro / glm-5"]
     end
 
     subgraph Execution["Execution Layer (Orchestrator)"]
@@ -300,11 +300,11 @@ task({ category: "quick", prompt: "..." }); // "Just get it done fast"
 | -------------------- | ------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | `visual-engineering` | `google/gemini-3.1-pro high`   | `gemini-3.1-pro` → `glm-5` → `claude-opus-4-7` → `glm-5` → `k2p5`                     | Frontend, UI/UX, design, styling, animation                 |
 | `ultrabrain`         | `openai/gpt-5.5 xhigh`         | `gpt-5.5` → `gemini-3.1-pro` → `claude-opus-4-7` → `glm-5`                             | Deep logical reasoning, complex architecture decisions      |
-| `deep`               | `openai/gpt-5.5 medium`        | `gpt-5.5` → `claude-opus-4-7` → `gemini-3.1-pro`                                       | Goal-oriented autonomous problem-solving, thorough research |
+| `deep`               | `openai/gpt-5.3-codex high`    | `gpt-5.3-codex` → `claude-opus-4-7` → `gemini-3.1-pro`                                  | Goal-oriented autonomous problem-solving, thorough research |
 | `artistry`           | `google/gemini-3.1-pro high`   | `gemini-3.1-pro` → `claude-opus-4-7` → `gpt-5.5`                                       | Highly creative or artistic tasks, novel ideas              |
-| `quick`              | `openai/gpt-5.4-mini`          | `gpt-5.4-mini` → `claude-haiku-4-5` → `gemini-3-flash` → `minimax-m2.7` → `gpt-5-nano` | Trivial tasks, single file changes, typo fixes              |
-| `unspecified-low`    | `anthropic/claude-sonnet-4-6`  | `claude-sonnet-4-6` → `gpt-5.3-codex` → `kimi-k2.5` → `gemini-3-flash` → `minimax-m2.7` | Tasks that don't fit other categories, low effort           |
-| `unspecified-high`   | `anthropic/claude-opus-4-7 max` | `claude-opus-4-7` → `gpt-5.5` → `glm-5` → `k2p5` → `kimi-k2.5`                          | Tasks that don't fit other categories, high effort          |
+| `quick`              | `openai/gpt-5.4-mini-fast none` | `gpt-5.4-mini-fast` → `claude-haiku-4-5` → `gemini-3-flash` → `minimax-m2.7` → `gpt-5-nano` | Trivial tasks, single file changes, typo fixes           |
+| `unspecified-low`    | `openai/gpt-5.5 medium`        | `gpt-5.5` → `gpt-5.3-codex` → `claude-sonnet-4-6` → `kimi-k2.6` → `gemini-3-flash` → `minimax-m2.7` | Tasks that don't fit other categories, low effort |
+| `unspecified-high`   | `openai/gpt-5.5 high`          | `gpt-5.5` → `claude-opus-4-7` → `glm-5` → `k2p5` → `glm-5.1` → `kimi-k2.5`              | Tasks that don't fit other categories, high effort          |
 | `writing`            | `kimi-for-coding/k2p5`         | `gemini-3-flash` → `kimi-k2.5` → `claude-sonnet-4-6` → `minimax-m2.7`                  | Documentation, prose, technical writing                     |
 
 ### Skills: Domain-Specific Instructions

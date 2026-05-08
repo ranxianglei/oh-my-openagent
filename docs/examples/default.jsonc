@@ -48,12 +48,12 @@
   },
 
   "categories": {
-    "quick": { "model": "opencode/gpt-5-nano" },
-    "unspecified-low": { "model": "anthropic/claude-sonnet-4-6" },
-    "unspecified-high": { "model": "anthropic/claude-opus-4-7", "variant": "max" },
+    "quick": { "model": "openai/gpt-5.4-mini-fast", "variant": "none" },
+    "unspecified-low": { "model": "openai/gpt-5.5", "variant": "medium" },
+    "unspecified-high": { "model": "openai/gpt-5.5", "variant": "high" },
     "writing": { "model": "google/gemini-3-flash" },
     "visual-engineering": { "model": "google/gemini-3.1-pro", "variant": "high" },
-    "deep": { "model": "openai/gpt-5.5" },
+    "deep": { "model": "openai/gpt-5.3-codex", "variant": "high" },
     "ultrabrain": { "model": "openai/gpt-5.5", "variant": "xhigh" },
   },
 
