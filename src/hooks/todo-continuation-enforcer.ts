@@ -39,6 +39,7 @@ interface SessionState {
   isRecovering?: boolean
   countdownStartedAt?: number
   abortDetectedAt?: number
+  consecutiveEmptyResponses?: number
 }
 
 const CONTINUATION_PROMPT = `${createSystemDirective(SystemDirectiveTypes.TODO_CONTINUATION)}
@@ -52,6 +53,7 @@ Incomplete tasks remain in your todo list. Continue working on the next pending 
 const COUNTDOWN_SECONDS = 2
 const TOAST_DURATION_MS = 900
 const COUNTDOWN_GRACE_PERIOD_MS = 500
+const MAX_EMPTY_RESPONSE_RETRIES = 2
 
 function getMessageDir(sessionID: string): string | null {
   if (!existsSync(MESSAGE_STORAGE)) return null
@@ -75,6 +77,8 @@ interface MessageInfo {
   id?: string
   role?: string
   error?: { name?: string; data?: unknown }
+  tokens?: { input?: number; output?: number }
+  finish?: string
 }
 
 function isLastAssistantMessageAborted(messages: Array<{ info?: MessageInfo }>): boolean {
@@ -84,11 +88,22 @@ function isLastAssistantMessageAborted(messages: Array<{ info?: MessageInfo }>):
   if (assistantMessages.length === 0) return false
 
   const lastAssistant = assistantMessages[assistantMessages.length - 1]
-  const errorName = lastAssistant.info?.error?.name
+  const info = lastAssistant.info
+  const errorName = info?.error?.name
 
-  if (!errorName) return false
+  if (errorName) {
+    return errorName === "MessageAbortedError" || errorName === "AbortError"
+  }
 
-  return errorName === "MessageAbortedError" || errorName === "AbortError"
+  // Fallback: detect empty responses where the model returned nothing
+  // opencode sometimes aborts without setting error field, or models
+  // return finish="other" with zero tokens (no content generated)
+  const tokens = info?.tokens
+  const hasNoOutput = tokens && tokens.input === 0 && tokens.output === 0
+  const finishReason = info?.finish
+  const isEmptyResponse = finishReason === "other" || (hasNoOutput && finishReason !== "stop" && finishReason !== "tool_use")
+
+  return !!isEmptyResponse
 }
 
 export function createTodoContinuationEnforcer(
@@ -345,8 +360,20 @@ export function createTodoContinuationEnforcer(
         const messages = (messagesResp as { data?: Array<{ info?: MessageInfo }> }).data ?? []
 
         if (isLastAssistantMessageAborted(messages)) {
-          log(`[${HOOK_NAME}] Skipped: last assistant message was aborted (API fallback)`, { sessionID })
-          return
+          state.consecutiveEmptyResponses = (state.consecutiveEmptyResponses || 0) + 1
+
+          if (state.consecutiveEmptyResponses > MAX_EMPTY_RESPONSE_RETRIES) {
+            log(`[${HOOK_NAME}] Skipped: ${state.consecutiveEmptyResponses} consecutive empty responses (max: ${MAX_EMPTY_RESPONSE_RETRIES})`, { sessionID })
+            return
+          }
+
+          log(`[${HOOK_NAME}] Empty response #${state.consecutiveEmptyResponses}, attempting recovery`, { sessionID })
+          // Fall through to normal continuation logic as recovery
+        } else {
+          if (state.consecutiveEmptyResponses) {
+            log(`[${HOOK_NAME}] Normal response, resetting empty response counter`, { sessionID })
+            state.consecutiveEmptyResponses = 0
+          }
         }
       } catch (err) {
         log(`[${HOOK_NAME}] Messages fetch failed, continuing`, { sessionID, error: String(err) })
